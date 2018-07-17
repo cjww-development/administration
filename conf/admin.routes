@@ -1,1 +1,2 @@
 ->          /administration                 app.Routes
+->          /                               health.Routes

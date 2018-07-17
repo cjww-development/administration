@@ -1,0 +1,166 @@
+/*
+ * Copyright 2018 CJWW Development
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package controllers
+
+import com.cjwwdev.http.headers.HeaderPackage
+import com.cjwwdev.implicits.ImplicitDataSecurity._
+import com.cjwwdev.implicits.ImplicitJsValues._
+import com.cjwwdev.security.encryption.SHA512
+import helpers.controllers.ControllerSpec
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.ControllerComponents
+import play.api.test.FakeRequest
+import play.api.test.Helpers.stubControllerComponents
+import services.{ManagementAccountService, ValidationService}
+
+class AccountControllerSpec extends ControllerSpec {
+
+  private val testController = new AccountController {
+    override val managementAccountService: ManagementAccountService   = mockManagementAccountService
+    override val validationService: ValidationService                 = mockValidationService
+    override protected def controllerComponents: ControllerComponents = stubControllerComponents()
+  }
+
+  def postRequest: FakeRequest[String] = FakeRequest()
+    .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+    .withBody(
+      s"""
+         |{
+         |   "username" : "testUserN",
+         |   "email" : "test@email.com",
+         |   "password" : "${SHA512.encrypt("testPassword")}"
+         |}
+      """.stripMargin.encrypt
+    )
+
+  "createNewUser" should {
+    "return a CREATED" in {
+      mockIsUserNameInUse(inUse = false)
+      mockIsEmailInUse(inUse = false)
+
+      mockInsertNewManagementUser(inserted = true)
+
+      assertFutureResult(testController.createNewUser()(postRequest)) { res =>
+        status(res)                            mustBe CREATED
+        contentAsJson(res).get[String]("body") mustBe "Account created"
+      }
+    }
+
+    "return an INTERNAL SERVER ERROR" in {
+      mockIsUserNameInUse(inUse = false)
+      mockIsEmailInUse(inUse = false)
+
+      mockInsertNewManagementUser(inserted = false)
+
+      assertFutureResult(testController.createNewUser()(postRequest)) { res =>
+        status(res)                                    mustBe INTERNAL_SERVER_ERROR
+        contentAsJson(res).get[String]("errorMessage") mustBe "There was a problem creating the new account"
+      }
+    }
+
+    "return a CONFLICT" when {
+      "the email is in use" in {
+        mockIsUserNameInUse(inUse = false)
+        mockIsEmailInUse(inUse = true)
+
+        assertFutureResult(testController.createNewUser()(postRequest)) { res =>
+          status(res)                                    mustBe CONFLICT
+          contentAsJson(res).get[String]("errorMessage") mustBe "Could not create new account; either the email or username is already in use"
+        }
+      }
+
+      "the user name is in use" in {
+        mockIsUserNameInUse(inUse = true)
+        mockIsEmailInUse(inUse = false)
+
+        assertFutureResult(testController.createNewUser()(postRequest)) { res =>
+          status(res)                                    mustBe CONFLICT
+          contentAsJson(res).get[String]("errorMessage") mustBe "Could not create new account; either the email or username is already in use"
+        }
+      }
+
+      "both are in use" in {
+        mockIsUserNameInUse(inUse = true)
+        mockIsEmailInUse(inUse = true)
+
+        assertFutureResult(testController.createNewUser()(postRequest)) { res =>
+          status(res)                                    mustBe CONFLICT
+          contentAsJson(res).get[String]("errorMessage") mustBe "Could not create new account; either the email or username is already in use"
+        }
+      }
+    }
+  }
+
+  "authenticateUser" should {
+    lazy val request = FakeRequest()
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+      .withBody(
+        s"""
+          |{
+          |   "username" : "testUserName",
+          |   "password" : "${SHA512.encrypt("testPassword")}"
+          |}
+        """.stripMargin.encrypt
+      )
+
+    "return an Ok" in {
+      mockAuthenticateUser(authenticated = true)
+
+      assertFutureResult(testController.authenticateUser()(request)) { res =>
+        status(res)                                     mustBe OK
+        contentAsJson(res).\("body").as[String].decrypt mustBe s"management-$uuid"
+      }
+    }
+
+    "return a Forbidden" in {
+      mockAuthenticateUser(authenticated = false)
+
+      assertFutureResult(testController.authenticateUser()(request)) { res =>
+        status(res) mustBe FORBIDDEN
+      }
+    }
+  }
+
+  "getManagementUser" should {
+    lazy val request = FakeRequest()
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+    "return an Ok" in {
+      mockGetManagementUser(fetched = true)
+
+      assertFutureResult(testController.getManagementUser("testManagementId")(request)) { res =>
+        status(res)                                                      mustBe OK
+        contentAsJson(res).\("body").as[String].decryptIntoType[JsValue] mustBe Json.parse(
+          s"""
+            |{
+            |   "managementId" : "${testManagementAccount.managementId}",
+            |   "username" : "${testManagementAccount.username}",
+            |   "email" : "${testManagementAccount.email}"
+            |}
+          """.stripMargin
+        )
+      }
+    }
+
+    "return a NotFound" in {
+      mockGetManagementUser(fetched = false)
+
+      assertFutureResult(testController.getManagementUser("testManagementId")(request)) { res =>
+        status(res) mustBe NOT_FOUND
+      }
+    }
+  }
+}
