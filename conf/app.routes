@@ -2,4 +2,5 @@
 POST        /register               controllers.AccountController.createNewUser()
 POST        /authenticate           controllers.AccountController.authenticateUser()
 GET         /user/:managementId     controllers.AccountController.getManagementUser(managementId)
-
+DELETE      /user/:managementId     controllers.AccountController.deleteManagementUser(managementId)
+GET         /users                  controllers.AccountController.fetchAllManagementUsers()

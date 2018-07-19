@@ -25,6 +25,7 @@ trait Fixtures {
     managementId = generateTestSystemId("management"),
     username     = "testUserName",
     email        = "testEmail",
-    password     = "testPassword"
+    password     = "testPassword",
+    permissions  = List("all")
   )
 }

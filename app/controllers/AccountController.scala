@@ -17,10 +17,11 @@
 package controllers
 
 import com.cjwwdev.implicits.ImplicitDataSecurity._
-import com.cjwwdev.mongo.responses.{MongoFailedCreate, MongoSuccessCreate}
+import com.cjwwdev.mongo.responses.{MongoFailedCreate, MongoFailedDelete, MongoSuccessCreate, MongoSuccessDelete}
 import com.cjwwdev.security.encryption.DataSecurity
 import common.{BackendController, MissingAccountException}
 import javax.inject.Inject
+
 import models.{Account, Credentials}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{ManagementAccountService, ValidationService}
@@ -100,6 +101,43 @@ trait AccountController extends BackendController {
       } recover {
         case _: MissingAccountException => withJsonResponseBody(NOT_FOUND, "No account found") { json =>
           NotFound(json)
+        }
+      }
+    }
+  }
+
+  def fetchAllManagementUsers(): Action[AnyContent] = Action.async { implicit request =>
+    applicationVerification {
+      managementAccountService.getAllManagementUsers map { users =>
+        val (status, body) = if(users.nonEmpty) {
+          (OK, DataSecurity.encryptType(users)(Account.outgoingAccountListWrites))
+        } else {
+          (NO_CONTENT, "No management users")
+        }
+
+        withJsonResponseBody(status, body) { json =>
+          status match {
+            case OK         => Ok(json)
+            case NO_CONTENT => NoContent
+          }
+        }
+      }
+    }
+  }
+
+  def deleteManagementUser(managementId: String): Action[AnyContent] = Action.async { implicit request =>
+    applicationVerification {
+      managementAccountService.deleteUser(managementId) map { resp =>
+        val (status, body) = resp match {
+          case MongoSuccessDelete => (NO_CONTENT, "")
+          case MongoFailedDelete  => (INTERNAL_SERVER_ERROR, "There was a problem deleting the management user")
+        }
+
+        withJsonResponseBody(status, body) { json =>
+          status match {
+            case NO_CONTENT            => NoContent
+            case INTERNAL_SERVER_ERROR => InternalServerError(json)
+          }
         }
       }
     }

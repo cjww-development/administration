@@ -17,6 +17,7 @@
 package api
 
 import com.cjwwdev.implicits.ImplicitDataSecurity._
+import models.Account
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
 import repositories.ManagementAccountRepository
@@ -42,7 +43,10 @@ class GetManagementUserISpec extends IntegrationSpec {
               |{
               |   "managementId" : "${testManagementAccount.managementId}",
               |   "username" : "${testManagementAccount.username}",
-              |   "email" : "${testManagementAccount.email}"
+              |   "email" : "${testManagementAccount.email}",
+              |   "permissions" : [
+              |       "all"
+              |   ]
               |}
             """.stripMargin
           )
@@ -56,6 +60,33 @@ class GetManagementUserISpec extends IntegrationSpec {
 
         awaitAndAssert(result) { res =>
           statusOf(res) mustBe NOT_FOUND
+        }
+      }
+    }
+  }
+
+  "/users" should {
+    "return an Ok" when {
+      "a set of users have been found" in new ApiTest {
+        override def result: Future[WSResponse] = client(s"$testAppUrl/users").get()
+
+        await(managementAccountRepository.insertManagementAccount(testManagementAccount))
+
+        awaitAndAssert(result) { res =>
+          statusOf(res)                                                                 mustBe OK
+          jsonContent[JsValue](res).\("body").as[String].decryptIntoType[List[JsValue]] mustBe List(Json.toJson(testManagementAccount)(Account.outgoingAccountWrites))
+        }
+      }
+    }
+
+    "return a NoContent" when {
+      "no users have been found" in new ApiTest {
+        override def result: Future[WSResponse] = client(s"$testAppUrl/users").get()
+
+        await(repo.collection.flatMap(_.drop(failIfNotFound = false)))
+
+        awaitAndAssert(result) { res =>
+          statusOf(res) mustBe NO_CONTENT
         }
       }
     }

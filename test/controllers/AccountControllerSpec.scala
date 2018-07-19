@@ -21,6 +21,7 @@ import com.cjwwdev.implicits.ImplicitDataSecurity._
 import com.cjwwdev.implicits.ImplicitJsValues._
 import com.cjwwdev.security.encryption.SHA512
 import helpers.controllers.ControllerSpec
+import models.Account
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
@@ -42,7 +43,10 @@ class AccountControllerSpec extends ControllerSpec {
          |{
          |   "username" : "testUserN",
          |   "email" : "test@email.com",
-         |   "password" : "${SHA512.encrypt("testPassword")}"
+         |   "password" : "${SHA512.encrypt("testPassword")}",
+         |   "permissions" : [
+         |      "all"
+         |   ]
          |}
       """.stripMargin.encrypt
     )
@@ -148,7 +152,10 @@ class AccountControllerSpec extends ControllerSpec {
             |{
             |   "managementId" : "${testManagementAccount.managementId}",
             |   "username" : "${testManagementAccount.username}",
-            |   "email" : "${testManagementAccount.email}"
+            |   "email" : "${testManagementAccount.email}",
+            |   "permissions" : [
+            |       "all"
+            |   ]
             |}
           """.stripMargin
         )
@@ -160,6 +167,49 @@ class AccountControllerSpec extends ControllerSpec {
 
       assertFutureResult(testController.getManagementUser("testManagementId")(request)) { res =>
         status(res) mustBe NOT_FOUND
+      }
+    }
+  }
+
+  "fetchAllManagementUsers" should {
+    lazy val request = FakeRequest()
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+
+    "return an Ok" in {
+      mockGetAllManagementUsers(populated = true)
+
+      assertFutureResult(testController.fetchAllManagementUsers()(request)) { res =>
+        status(res)                                                            mustBe OK
+        contentAsJson(res).\("body").as[String].decryptIntoType[List[JsValue]] mustBe List(Json.toJson(testManagementAccount)(Account.outgoingAccountWrites))
+      }
+    }
+
+    "return a No content" in {
+      mockGetAllManagementUsers(populated = false)
+
+      assertFutureResult(testController.fetchAllManagementUsers()(request)) { res =>
+        status(res) mustBe NO_CONTENT
+      }
+    }
+  }
+
+  "deleteManagementUser" should {
+    lazy val request = FakeRequest()
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+
+    "return a NoContent" in {
+      mockDeleteManagementUser(deleted = true)
+
+      assertFutureResult(testController.deleteManagementUser(generateTestSystemId(MANAGEMENT))(request)) { res =>
+        status(res) mustBe NO_CONTENT
+      }
+    }
+
+    "return an Internal server error" in {
+      mockDeleteManagementUser(deleted = false)
+
+      assertFutureResult(testController.deleteManagementUser(generateTestSystemId(MANAGEMENT))(request)) { res =>
+        status(res) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }

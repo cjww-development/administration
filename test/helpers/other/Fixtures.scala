@@ -23,6 +23,7 @@ trait Fixtures extends TestDataGenerator {
     managementId = generateTestSystemId(MANAGEMENT),
     username     = "testUserName",
     email        = "testEmail",
-    password     = "testPassword"
+    password     = "testPassword",
+    permissions  = List("all")
   )
 }

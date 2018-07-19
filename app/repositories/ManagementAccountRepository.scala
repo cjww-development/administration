@@ -82,6 +82,13 @@ trait ManagementAccountRepository extends DatabaseRepository with Logging {
     } yield res
   }
 
+  def getAllManagementUsers: Future[List[Account]] = {
+    for {
+      col <- collection
+      res <- col.find(BSONDocument()).cursor[Account]().collect[List]()
+    } yield res
+  }
+
   def updateEmail(managementId: String, email: String): Future[MongoUpdatedResponse] = {
     for {
       col <- collection
@@ -103,6 +110,19 @@ trait ManagementAccountRepository extends DatabaseRepository with Logging {
     } else {
       uwr.writeErrors foreach(we => logger.error(s"code=[${we.code}] errormessage=[${we.errmsg}]"))
       MongoFailedUpdate
+    }
+  }
+
+  def deleteManagementUser(managementId: String): Future[MongoDeleteResponse] = {
+    for {
+      col <- collection
+      del <- col.remove[BSONDocument](AccountSelectors.managementIdSelector(managementId))
+    } yield if(del.ok) {
+      logger.info(s"deleted user $managementId")
+      MongoSuccessDelete
+    } else {
+      logger.error(s"Failed to delete user $managementId")
+      MongoFailedDelete
     }
   }
 }

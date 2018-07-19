@@ -22,6 +22,8 @@ You can set an alias for this in **.bashrc** (ubuntu) or **.bash_profile** (mac)
 |  /administration/register            |        POST       | Registers a user in adminstration                                            |
 |  /administration/authenticate        |        POST       | Validates that the user attempting to login, exists                          |
 |  /administration/user/:managementId  |        GET        | Retrieves an admin users id, user name and email based on their managementId |
+|  /administration/user/:managementId  |        DELETE     | Deletes the management user given the specified management id                |
+|  /administration/users               |        GET        | Gets all management users                                                    |
 
 # Routes breakdown
 
@@ -146,7 +148,7 @@ Both of these packages can be found in [application-utilities](http://github.com
 }
 ```
 
-`body` contains the account details (id, username and email); has to be first decrypted using `com.cjwwdev.security.encryption.DataSecurity`.
+`body` contains the account details (id, username, email and permissions); has to be first decrypted using `com.cjwwdev.security.encryption.DataSecurity`.
 
 
 **Not found (404)**: The specified management id could not be matched to a user
@@ -161,6 +163,56 @@ Both of these packages can be found in [application-utilities](http://github.com
     }
 }
 ```
+
+#### DELETE /administration/user/:managementId
+
+##### Headers
+|       key        |       value      |
+|------------------|------------------|
+|   Content-type   | text/plain | 
+|   cjww-headers   | rTxo4DYUjuc-PJKeysvWddy_NO02WBQxTt4nwtDYyIzHKc4DJqR7-zilP3Ix7WEY8a4KLp78si_TnEEIn2kfSiTQh1mtof9DeKqnYmheQnfDve2iW2GgH585LsBd0IcOO2J8XAUnj1Al8I3PiK9xsg |
+
+##### Responses
+**No Content (204)**: The specified management id was deleted
+
+**Internal Server Error (500)**: There was a problem deleting the management user
+```json
+{
+    "uri": "/administration/user/:managementId",
+    "method": "POST",
+    "status": 404,
+    "errorMessage": "There was a problem deleting the management user",
+    "stats": {
+        "requestCompletedAt": "2018-05-01T15:37:21.426"
+    }
+}
+```
+
+#### GET /administration/users
+
+##### Headers
+|       key        |       value      |
+|------------------|------------------|
+|   Content-type   | text/plain | 
+|   cjww-headers   | rTxo4DYUjuc-PJKeysvWddy_NO02WBQxTt4nwtDYyIzHKc4DJqR7-zilP3Ix7WEY8a4KLp78si_TnEEIn2kfSiTQh1mtof9DeKqnYmheQnfDve2iW2GgH585LsBd0IcOO2J8XAUnj1Al8I3PiK9xsg |
+
+##### Responses
+**Ok (200)**: All found management users have been returned
+```json
+{
+    "uri": "/administration/user/:managementId",
+    "method": "POST",
+    "status": 404,
+    "body": "<BODY>",
+    "stats": {
+        "requestCompletedAt": "2018-05-01T15:37:21.426"
+    }
+}
+```
+
+`body` contains the account details (id, username, email and permissions) of all management users; has to be first decrypted using `com.cjwwdev.security.encryption.DataSecurity`.
+
+**No Content (204)**: No management users could be found
                   
 License
 =======

@@ -16,7 +16,7 @@
 
 package services
 
-import com.cjwwdev.mongo.responses.{MongoFailedCreate, MongoFailedUpdate, MongoSuccessCreate, MongoSuccessUpdate}
+import com.cjwwdev.mongo.responses._
 import common.MissingAccountException
 import helpers.services.ServiceSpec
 import models.Credentials
@@ -83,6 +83,24 @@ class ManagementAccountServiceSpec extends ServiceSpec {
       mockGetManagementUser(found = false)
 
       intercept[MissingAccountException](await(testService.getManagementUser("managementId", generateTestSystemId(MANAGEMENT))))
+    }
+  }
+
+  "getAllManagementUsers" should {
+    "return a populated list of users" in {
+      mockGetAllManagementUsers(populated = true)
+
+      awaitAndAssert(testService.getAllManagementUsers) { res =>
+        assert(res.nonEmpty)
+      }
+    }
+
+    "return an empty list" in {
+      mockGetAllManagementUsers(populated = false)
+
+      awaitAndAssert(testService.getAllManagementUsers) { res =>
+        assert(res.isEmpty)
+      }
     }
   }
 
@@ -155,6 +173,24 @@ class ManagementAccountServiceSpec extends ServiceSpec {
         testManagementAccount.password,
         "testUpdatedPassword"
       )))
+    }
+  }
+
+  "deleteManagementUser" should {
+    "return a MongoSuccessDelete" in {
+      mockDeleteManagementUser(deleted = true)
+
+      awaitAndAssert(testService.deleteUser(generateTestSystemId(MANAGEMENT))) {
+        _ mustBe MongoSuccessDelete
+      }
+    }
+
+    "return a MongoFailedDelete" in {
+      mockDeleteManagementUser(deleted = false)
+
+      awaitAndAssert(testService.deleteUser(generateTestSystemId(MANAGEMENT))) {
+        _ mustBe MongoFailedDelete
+      }
     }
   }
 }
