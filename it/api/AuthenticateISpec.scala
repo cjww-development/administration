@@ -36,7 +36,8 @@ class AuthenticateISpec extends IntegrationSpec {
         managementId = "management-a6e9c2dd-98b9-4635-895a-c59d78048682",
         username     = "testuser",
         email        = "test@email.com",
-        password     = SHA512.encrypt("testPassword")
+        password     = SHA512.encrypt("testPassword"),
+        permissions  = List("all")
       )))
 
       override def result: Future[WSResponse] = client(s"$testAppUrl/authenticate")

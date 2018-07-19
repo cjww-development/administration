@@ -51,6 +51,11 @@ trait MockManagementAccountRepository extends BeforeAndAfterEach with MockitoSug
       .thenReturn(Future(if(found) Some(testManagementAccount) else None))
   }
 
+  def mockGetAllManagementUsers(populated: Boolean): OngoingStubbing[Future[List[Account]]] = {
+    when(mockManagementAccountRepository.getAllManagementUsers)
+      .thenReturn(Future(if(populated) List(testManagementAccount) else List()))
+  }
+
   def mockFailedGetManagementUser: OngoingStubbing[Future[Option[Account]]] = {
     when(mockManagementAccountRepository.getManagementUser(ArgumentMatchers.any()))
       .thenReturn(Future.failed(new MissingAccountException("No account found")))
@@ -64,5 +69,10 @@ trait MockManagementAccountRepository extends BeforeAndAfterEach with MockitoSug
   def mockUpdatePassword(updated: Boolean): OngoingStubbing[Future[MongoUpdatedResponse]] = {
     when(mockManagementAccountRepository.updatePassword(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future(if(updated) MongoSuccessUpdate else MongoFailedUpdate))
+  }
+
+  def mockDeleteManagementUser(deleted: Boolean): OngoingStubbing[Future[MongoDeleteResponse]] = {
+    when(mockManagementAccountRepository.deleteManagementUser(ArgumentMatchers.any()))
+      .thenReturn(Future(if(deleted) MongoSuccessDelete else MongoFailedDelete))
   }
 }

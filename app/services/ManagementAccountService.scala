@@ -16,9 +16,10 @@
 
 package services
 
-import com.cjwwdev.mongo.responses.{MongoCreateResponse, MongoUpdatedResponse}
+import com.cjwwdev.mongo.responses.{MongoCreateResponse, MongoDeleteResponse, MongoUpdatedResponse}
 import common.MissingAccountException
 import javax.inject.Inject
+
 import models.{Account, Credentials}
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
@@ -49,6 +50,10 @@ trait ManagementAccountService {
     }
   }
 
+  def getAllManagementUsers: Future[List[Account]] = {
+    managementAccountRepository.getAllManagementUsers
+  }
+
   def authenticateUser(credentials: Credentials): Future[Option[String]] = {
     managementAccountRepository.getManagementUser(AccountSelectors.loginSelector(credentials)) map {
       _.map(_.managementId)
@@ -66,5 +71,9 @@ trait ManagementAccountService {
       }
       mur <- managementAccountRepository.updatePassword(acc.managementId, oldPassword, newPassword)
     } yield mur
+  }
+
+  def deleteUser(managementId: String): Future[MongoDeleteResponse] = {
+    managementAccountRepository.deleteManagementUser(managementId)
   }
 }

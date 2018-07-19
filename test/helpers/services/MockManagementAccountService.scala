@@ -51,6 +51,11 @@ trait MockManagementAccountService extends BeforeAndAfterEach with MockitoSugar 
       .thenReturn(if(fetched) Future(testManagementAccount) else Future.failed(new MissingAccountException("No account")))
   }
 
+  def mockGetAllManagementUsers(populated: Boolean): OngoingStubbing[Future[List[Account]]] = {
+    when(mockManagementAccountService.getAllManagementUsers)
+      .thenReturn(Future(if(populated) List(testManagementAccount) else List()))
+  }
+
   def mockAuthenticateUser(authenticated: Boolean): OngoingStubbing[Future[Option[String]]] = {
     when(mockManagementAccountService.authenticateUser(ArgumentMatchers.any()))
       .thenReturn(Future(if(authenticated) Some(generateTestSystemId("management")) else None))
@@ -64,5 +69,10 @@ trait MockManagementAccountService extends BeforeAndAfterEach with MockitoSugar 
   def mockUpdatePassword(updated: Boolean): OngoingStubbing[Future[MongoUpdatedResponse]] = {
     when(mockManagementAccountService.updatePassword(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
       .thenReturn(Future(if(updated) MongoSuccessUpdate else MongoFailedUpdate))
+  }
+
+  def mockDeleteManagementUser(deleted: Boolean): OngoingStubbing[Future[MongoDeleteResponse]] = {
+    when(mockManagementAccountService.deleteUser(ArgumentMatchers.any()))
+      .thenReturn(Future(if(deleted) MongoSuccessDelete else MongoFailedDelete))
   }
 }

@@ -38,7 +38,10 @@ class RegistrationISpec extends IntegrationSpec {
               |{
               |   "username" : "testUserN",
               |   "email" : "test@email.com",
-              |   "password" : "${SHA512.encrypt("testPassword")}"
+              |   "password" : "${SHA512.encrypt("testPassword")}",
+              |   "permissions" : [
+              |       "all"
+              |   ]
               |}
             """.stripMargin.encrypt
           )
@@ -56,12 +59,15 @@ class RegistrationISpec extends IntegrationSpec {
             |{
             |   "username" : "testUserN",
             |   "email" : "test@email.com",
-            |   "password" : "${SHA512.encrypt("testPassword")}"
+            |   "password" : "${SHA512.encrypt("testPassword")}",
+            |   "permissions" : [
+            |       "all"
+            |   ]
             |}
           """.stripMargin.encrypt
         )
 
-        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", s"${SHA512.encrypt("testPassword")}")))
+        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", s"${SHA512.encrypt("testPassword")}", List("all"))))
 
         awaitAndAssert(result) {
           _.status mustBe CONFLICT
@@ -74,12 +80,15 @@ class RegistrationISpec extends IntegrationSpec {
             |{
             |   "username" : "testUserN",
             |   "email" : "test@email.com",
-            |   "password" : "${SHA512.encrypt("testPassword")}"
+            |   "password" : "${SHA512.encrypt("testPassword")}",
+            |   "permissions" : [
+            |       "all"
+            |   ]
             |}
           """.stripMargin.encrypt
         )
 
-        await(repo.insertManagementAccount(Account("testId", "testUserN", "test1@email.com", s"${SHA512.encrypt("testPassword")}")))
+        await(repo.insertManagementAccount(Account("testId", "testUserN", "test1@email.com", s"${SHA512.encrypt("testPassword")}", List("all"))))
 
         awaitAndAssert(result) {
           _.status mustBe CONFLICT
@@ -92,12 +101,15 @@ class RegistrationISpec extends IntegrationSpec {
             |{
             |   "username" : "testUserN",
             |   "email" : "test@email.com",
-            |   "password" : "${SHA512.encrypt("testPassword")}"
+            |   "password" : "${SHA512.encrypt("testPassword")}",
+            |   "permissions" : [
+            |       "all"
+            |   ]
             |}
           """.stripMargin.encrypt
         )
 
-        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", s"${SHA512.encrypt("testPassword")}")))
+        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", s"${SHA512.encrypt("testPassword")}", List("all"))))
 
         awaitAndAssert(result) {
           _.status mustBe CONFLICT

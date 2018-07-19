@@ -25,7 +25,8 @@ import play.api.libs.functional.syntax._
 case class Account(managementId: String,
                    username: String,
                    email: String,
-                   password: String)
+                   password: String,
+                   permissions: List[String])
 
 object Account extends RegexPack {
   implicit val format: OFormat[Account] = Json.format[Account]
@@ -40,14 +41,21 @@ object Account extends RegexPack {
     (__ \ "managementId").read[String](generateManagementId) and
     (__ \ "username").read[String](userNameValidation) and
     (__ \ "email").read[String](emailValidation) and
-    (__ \ "password").read[String](passwordValidation)
+    (__ \ "password").read[String](passwordValidation) and
+    (__ \ "permissions").read[List[String]]
   )(Account.apply _)
 
   val outgoingAccountWrites: Writes[Account] = Writes[Account] { acc =>
     Json.obj(
       "managementId" -> acc.managementId,
       "username"     -> acc.username,
-      "email"        -> acc.email
+      "email"        -> acc.email,
+      "permissions"  -> Json.toJson(acc.permissions)
     )
+  }
+
+  val outgoingAccountListWrites: Writes[List[Account]] = Writes[List[Account]] { accounts =>
+    val jsValues = accounts.map(acc => Json.toJson(acc)(outgoingAccountWrites))
+    Json.toJson(jsValues)
   }
 }
