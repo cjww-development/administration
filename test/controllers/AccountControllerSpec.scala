@@ -50,7 +50,7 @@ class AccountControllerSpec extends ControllerSpec {
          |}
       """.stripMargin.encrypt
     )
-
+  
   "createNewUser" should {
     "return a CREATED" in {
       mockIsUserNameInUse(inUse = false)
