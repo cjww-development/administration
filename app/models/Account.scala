@@ -37,7 +37,7 @@ object Account extends RegexPack {
   private val emailValidation    = Reads.StringReads.filter(JsonValidationError("Invalid email"))(_.matches(emailRegex.regex))
   private val passwordValidation = Reads.StringReads.filter(JsonValidationError("Invalid Password"))(_.length == 128)
 
-  val newAccountReads: Reads[Account] = (
+  def newAccountReads: Reads[Account] = (
     (__ \ "managementId").read[String](generateManagementId) and
     (__ \ "username").read[String](userNameValidation) and
     (__ \ "email").read[String](emailValidation) and
