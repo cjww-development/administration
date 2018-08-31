@@ -16,9 +16,11 @@
 
 package common.startup
 
+import java.util.{Base64, UUID}
+
 import com.cjwwdev.config.ConfigurationLoader
 import javax.inject.Inject
-import com.cjwwdev.implicits.ImplicitDataSecurity._
+import com.cjwwdev.security.encryption.SHA512
 import models.Account
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
@@ -29,14 +31,26 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class DefaultRootUser @Inject()(val managementAccountRepository: ManagementAccountRepository,
                                 val config: ConfigurationLoader) extends RootUser {
-  override val rootAccount: Account = config.loadedConfig.get[String]("root.user").decryptIntoType[Account]
+  override val userName = new String(Base64.getDecoder.decode(config.loadedConfig.get[String]("root.username")), "UTF-8")
+  override val email    = new String(Base64.getDecoder.decode(config.loadedConfig.get[String]("root.email")),    "UTF-8")
+  override val password = new String(Base64.getDecoder.decode(config.loadedConfig.get[String]("root.password")), "UTF-8")
   setupRootUser()
 }
 
 trait RootUser {
   val managementAccountRepository: ManagementAccountRepository
 
-  val rootAccount: Account
+  val userName: String
+  val email: String
+  val password: String
+
+  private def rootAccount: Account = Account(
+    managementId = s"management-${UUID.randomUUID()}",
+    username     = userName,
+    email        = email,
+    password     = SHA512.encrypt(password),
+    permissions  = List("all")
+  )
 
   private def await[T](future: Future[T]): T = Await.result(future, 10.seconds)
 
