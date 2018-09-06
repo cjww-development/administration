@@ -17,6 +17,7 @@
 package helpers.services
 
 import com.cjwwdev.testing.common.FutureHelpers
+import helpers.connectors.MockDNSConnector
 import helpers.other.{Fixtures, TestDataGenerator}
 import helpers.repositories.MockManagementAccountRepository
 import org.scalatest.mockito.MockitoSugar
@@ -27,5 +28,6 @@ trait ServiceSpec
     with MockitoSugar
     with FutureHelpers
     with MockManagementAccountRepository
+    with MockDNSConnector
     with Fixtures
     with TestDataGenerator

@@ -18,17 +18,20 @@ package common
 
 import com.cjwwdev.config.{ConfigurationLoader, DefaultConfigurationLoader}
 import com.cjwwdev.mongo.indexes.RepositoryIndexer
+import com.cjwwdev.scheduling.ScheduledJob
 import common.startup.{DefaultRootUser, RootUser}
+import connectors.{DNSConnector, DefaultDNSConnector}
 import controllers.{AccountController, DefaultAccountController}
+import jobs.DynamicDNSUpdateJob
 import play.api.{Configuration, Environment}
 import play.api.inject.{Binding, Module}
 import repositories.{DefaultManagementAccountRepository, ManagementAccountRepository}
-import services.{DefaultManagementAccountService, DefaultValidationService, ManagementAccountService, ValidationService}
+import services._
 
 
 class ServiceBindings extends Module {
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
-    bindOther() ++ bindRepositories() ++ bindStartup() ++ bindServices() ++ bindControllers()
+    bindOther() ++ bindRepositories() ++ bindConnectors() ++ bindStartup() ++ bindJobs() ++ bindServices() ++ bindControllers()
 
   private def bindOther(): Seq[Binding[_]] = Seq(
     bind(classOf[ConfigurationLoader]).to(classOf[DefaultConfigurationLoader]).eagerly(),
@@ -39,13 +42,22 @@ class ServiceBindings extends Module {
     bind(classOf[ManagementAccountRepository]).to(classOf[DefaultManagementAccountRepository]).eagerly()
   )
 
+  private def bindConnectors(): Seq[Binding[_]] = Seq(
+    bind(classOf[DNSConnector]).to(classOf[DefaultDNSConnector]).eagerly()
+  )
+
   private def bindStartup(): Seq[Binding[_]] = Seq(
     bind(classOf[RootUser]).to(classOf[DefaultRootUser]).eagerly()
   )
 
+  private def bindJobs(): Seq[Binding[_]] = Seq(
+    bind(classOf[ScheduledJob]).to(classOf[DynamicDNSUpdateJob]).eagerly()
+  )
+
   private def bindServices(): Seq[Binding[_]] = Seq(
     bind(classOf[ManagementAccountService]).to(classOf[DefaultManagementAccountService]).eagerly(),
-    bind(classOf[ValidationService]).to(classOf[DefaultValidationService]).eagerly()
+    bind(classOf[ValidationService]).to(classOf[DefaultValidationService]).eagerly(),
+    bind(classOf[DNSService]).to(classOf[DefaultDNSService]).eagerly()
   )
 
   private def bindControllers(): Seq[Binding[_]] = Seq(
