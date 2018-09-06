@@ -20,18 +20,16 @@ import com.cjwwdev.logging.Logging
 import com.cjwwdev.mongo.DatabaseRepository
 import com.cjwwdev.mongo.connection.ConnectionSettings
 import com.cjwwdev.mongo.responses._
-import common.MissingAccountException
 import javax.inject.Inject
 import models.Account
 import play.api.Configuration
-import play.api.libs.json.JsValue
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
 import selectors.AccountSelectors
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class DefaultManagementAccountRepository @Inject()(val config: Configuration) extends ManagementAccountRepository with ConnectionSettings
 
