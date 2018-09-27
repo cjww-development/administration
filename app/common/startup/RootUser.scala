@@ -19,8 +19,8 @@ package common.startup
 import java.util.{Base64, UUID}
 
 import com.cjwwdev.config.ConfigurationLoader
+import com.cjwwdev.security.sha.SHA512
 import javax.inject.Inject
-import com.cjwwdev.security.encryption.SHA512
 import models.Account
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
@@ -31,9 +31,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class DefaultRootUser @Inject()(val managementAccountRepository: ManagementAccountRepository,
                                 val config: ConfigurationLoader) extends RootUser {
-  override val userName = new String(Base64.getDecoder.decode(config.loadedConfig.get[String]("root.username")), "UTF-8")
-  override val email    = new String(Base64.getDecoder.decode(config.loadedConfig.get[String]("root.email")),    "UTF-8")
-  override val password = new String(Base64.getDecoder.decode(config.loadedConfig.get[String]("root.password")), "UTF-8")
+  override val userName = new String(Base64.getDecoder.decode(config.get[String]("root.username")), "UTF-8")
+  override val email    = new String(Base64.getDecoder.decode(config.get[String]("root.email")),    "UTF-8")
+  override val password = new String(Base64.getDecoder.decode(config.get[String]("root.password")), "UTF-8")
   setupRootUser()
 }
 

@@ -19,6 +19,7 @@ package models
 import java.util.UUID
 
 import com.cjwwdev.regex.RegexPack
+import com.cjwwdev.security.obfuscation.{Obfuscation, Obfuscator}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
@@ -57,5 +58,13 @@ object Account extends RegexPack {
   val outgoingAccountListWrites: Writes[List[Account]] = Writes[List[Account]] { accounts =>
     val jsValues = accounts.map(acc => Json.toJson(acc)(outgoingAccountWrites))
     Json.toJson(jsValues)
+  }
+
+  implicit val obfuscator: Obfuscator[Account] = new Obfuscator[Account] {
+    override def encrypt(value: Account): String = Obfuscation.obfuscateJson(Json.toJson(value)(outgoingAccountWrites))
+  }
+
+  implicit val listObfuscation: Obfuscator[List[Account]] = new Obfuscator[List[Account]] {
+    override def encrypt(value: List[Account]): String = Obfuscation.obfuscateJson(Json.toJson(value)(outgoingAccountListWrites))
   }
 }

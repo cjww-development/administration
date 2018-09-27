@@ -16,11 +16,8 @@
 
 package helpers.connectors
 
-import com.cjwwdev.mongo.responses._
-import common.MissingAccountException
 import connectors.DNSConnector
 import helpers.other.Fixtures
-import models.Account
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{reset, when}
 import org.mockito.stubbing.OngoingStubbing
@@ -29,8 +26,8 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.ws.WSResponse
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 trait MockDNSConnector extends BeforeAndAfterEach with MockitoSugar with Fixtures {
   self: PlaySpec =>

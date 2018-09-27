@@ -16,41 +16,47 @@
 
 package controllers
 
+import com.cjwwdev.config.{ConfigurationLoader, DefaultConfigurationLoader}
 import com.cjwwdev.http.headers.HeaderPackage
 import com.cjwwdev.implicits.ImplicitDataSecurity._
 import com.cjwwdev.implicits.ImplicitJsValues._
-import com.cjwwdev.security.encryption.SHA512
+import com.cjwwdev.security.deobfuscation.DeObfuscation._
+import com.cjwwdev.security.obfuscation.Obfuscation._
 import helpers.controllers.ControllerSpec
 import models.Account
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import services.{ManagementAccountService, ValidationService}
 
-class AccountControllerSpec extends ControllerSpec {
+class AccountControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
+
+  val configuration = app.injector.instanceOf[DefaultConfigurationLoader]
 
   private val testController = new AccountController {
+    override protected val config: ConfigurationLoader                = configuration
     override val managementAccountService: ManagementAccountService   = mockManagementAccountService
     override val validationService: ValidationService                 = mockValidationService
     override protected def controllerComponents: ControllerComponents = stubControllerComponents()
   }
 
   def postRequest: FakeRequest[String] = FakeRequest()
-    .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
-    .withBody(
+    .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", None).encrypt)
+    .withBody(Json.parse(
       s"""
          |{
          |   "username" : "testUserN",
          |   "email" : "test@email.com",
-         |   "password" : "${SHA512.encrypt("testPassword")}",
+         |   "password" : "${"testPassword".sha512}",
          |   "permissions" : [
          |      "all"
          |   ]
          |}
-      """.stripMargin.encrypt
-    )
-  
+      """.stripMargin
+    ).encrypt)
+
   "createNewUser" should {
     "return a CREATED" in {
       mockIsUserNameInUse(inUse = false)
@@ -111,22 +117,22 @@ class AccountControllerSpec extends ControllerSpec {
 
   "authenticateUser" should {
     lazy val request = FakeRequest()
-      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
-      .withBody(
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", None).encrypt)
+      .withBody(Json.parse(
         s"""
-          |{
-          |   "username" : "testUserName",
-          |   "password" : "${SHA512.encrypt("testPassword")}"
-          |}
-        """.stripMargin.encrypt
-      )
+           |{
+           |   "username" : "testUserName",
+           |   "password" : "${"testPassword".sha512}"
+           |}
+        """.stripMargin
+      ).encrypt)
 
     "return an Ok" in {
       mockAuthenticateUser(authenticated = true)
 
       assertFutureResult(testController.authenticateUser()(request)) { res =>
         status(res)                                     mustBe OK
-        contentAsJson(res).\("body").as[String].decrypt mustBe s"management-$uuid"
+        contentAsJson(res).\("body").as[String].decrypt[String] mustBe Left(s"management-$uuid")
       }
     }
 
@@ -141,13 +147,13 @@ class AccountControllerSpec extends ControllerSpec {
 
   "getManagementUser" should {
     lazy val request = FakeRequest()
-      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", None).encrypt)
     "return an Ok" in {
       mockGetManagementUser(fetched = true)
 
       assertFutureResult(testController.getManagementUser("testManagementId")(request)) { res =>
         status(res)                                                      mustBe OK
-        contentAsJson(res).\("body").as[String].decryptIntoType[JsValue] mustBe Json.parse(
+        contentAsJson(res).\("body").as[String].decrypt[JsValue] mustBe Left(Json.parse(
           s"""
             |{
             |   "managementId" : "${testManagementAccount.managementId}",
@@ -158,7 +164,7 @@ class AccountControllerSpec extends ControllerSpec {
             |   ]
             |}
           """.stripMargin
-        )
+        ))
       }
     }
 
@@ -173,14 +179,14 @@ class AccountControllerSpec extends ControllerSpec {
 
   "fetchAllManagementUsers" should {
     lazy val request = FakeRequest()
-      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", None).encrypt)
 
     "return an Ok" in {
       mockGetAllManagementUsers(populated = true)
 
       assertFutureResult(testController.fetchAllManagementUsers()(request)) { res =>
-        status(res)                                                            mustBe OK
-        contentAsJson(res).\("body").as[String].decryptIntoType[List[JsValue]] mustBe List(Json.toJson(testManagementAccount)(Account.outgoingAccountWrites))
+        status(res)                                             mustBe OK
+        contentAsJson(res).\("body").as[String].decrypt[JsValue] mustBe Left(Json.arr(Json.toJson(testManagementAccount)(Account.outgoingAccountWrites)))
       }
     }
 
@@ -195,7 +201,7 @@ class AccountControllerSpec extends ControllerSpec {
 
   "deleteManagementUser" should {
     lazy val request = FakeRequest()
-      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", "").encryptType)
+      .withHeaders("cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", None).encrypt)
 
     "return a NoContent" in {
       mockDeleteManagementUser(deleted = true)

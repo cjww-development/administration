@@ -16,9 +16,8 @@
 
 package api
 
-import com.cjwwdev.security.encryption.SHA512
+import com.cjwwdev.implicits.ImplicitDataSecurity._
 import models.Account
-import play.api.libs.json.JsValue
 import play.api.libs.ws.WSResponse
 import repositories.ManagementAccountRepository
 import utils.IntegrationSpec
@@ -38,7 +37,7 @@ class DeleteUserISpec extends IntegrationSpec {
           managementId = "management-a6e9c2dd-98b9-4635-895a-c59d78048682",
           username     = "testuser",
           email        = "test@email.com",
-          password     = SHA512.encrypt("testPassword"),
+          password     = "testPassword".sha512,
           permissions  = List("all")
         )))
 

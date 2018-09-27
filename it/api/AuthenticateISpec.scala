@@ -17,9 +17,10 @@
 package api
 
 import com.cjwwdev.implicits.ImplicitDataSecurity._
-import com.cjwwdev.security.encryption.SHA512
+import com.cjwwdev.security.deobfuscation.DeObfuscation._
+import com.cjwwdev.security.obfuscation.Obfuscation._
 import models.Account
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
 import repositories.ManagementAccountRepository
 import utils.IntegrationSpec
@@ -36,36 +37,36 @@ class AuthenticateISpec extends IntegrationSpec {
         managementId = "management-a6e9c2dd-98b9-4635-895a-c59d78048682",
         username     = "testuser",
         email        = "test@email.com",
-        password     = SHA512.encrypt("testPassword"),
+        password     = "testPassword".sha512,
         permissions  = List("all")
       )))
 
       override def result: Future[WSResponse] = client(s"$testAppUrl/authenticate")
-        .post(
+        .post(Json.parse(
           s"""
             |{
             |   "username" : "testuser",
-            |   "password" : "${SHA512.encrypt("testPassword")}"
+            |   "password" : "${"testPassword".sha512}"
             |}
-          """.stripMargin.encrypt
-        )
+          """.stripMargin
+        ).encrypt)
 
         awaitAndAssert(result) { res =>
           statusOf(res)                                         mustBe OK
-          bodyAsJson[JsValue](res).\("body").as[String].decrypt mustBe "management-a6e9c2dd-98b9-4635-895a-c59d78048682"
+          bodyAsJson[JsValue](res).\("body").as[String].decrypt[String] mustBe Left("management-a6e9c2dd-98b9-4635-895a-c59d78048682")
         }
     }
 
     "return a Forbidden" in new ApiTest {
       override def result: Future[WSResponse] = client(s"$testAppUrl/authenticate")
-        .post(
+        .post(Json.parse(
           s"""
              |{
-             |   "username" : "testuser2",
-             |   "password" : "${SHA512.encrypt("testPassword")}"
+             |   "username" : "testuser",
+             |   "password" : "${"testPassword".sha512}"
              |}
-          """.stripMargin.encrypt
-        )
+          """.stripMargin
+        ).encrypt)
 
       awaitAndAssert(result) { res =>
         statusOf(res) mustBe FORBIDDEN

@@ -17,8 +17,10 @@
 package api
 
 import com.cjwwdev.implicits.ImplicitDataSecurity._
-import com.cjwwdev.security.encryption.SHA512
+import com.cjwwdev.security.obfuscation.Obfuscation._
+import com.cjwwdev.security.sha.SHA512
 import models.Account
+import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
 import repositories.ManagementAccountRepository
 import utils.IntegrationSpec
@@ -33,17 +35,17 @@ class RegistrationISpec extends IntegrationSpec {
     "return a Created" when {
       "the user has been registered" in new ApiTest {
         override def result: Future[WSResponse] = client(s"$testAppUrl/register")
-          .post(
+          .post(Json.parse(
             s"""
               |{
               |   "username" : "testUserN",
               |   "email" : "test@email.com",
-              |   "password" : "${SHA512.encrypt("testPassword")}",
+              |   "password" : "${"testPassword".sha512}",
               |   "permissions" : [
-              |       "all"
+              |     "all"
               |   ]
               |}
-            """.stripMargin.encrypt
+            """.stripMargin).encrypt
           )
 
         awaitAndAssert(result) {
@@ -54,20 +56,21 @@ class RegistrationISpec extends IntegrationSpec {
 
     "return a Conflict" when {
       "the email address is already in use" in new ApiTest {
-        override def result: Future[WSResponse] = client(s"$testAppUrl/register").post(
-          s"""
-            |{
-            |   "username" : "testUserN",
-            |   "email" : "test@email.com",
-            |   "password" : "${SHA512.encrypt("testPassword")}",
-            |   "permissions" : [
-            |       "all"
-            |   ]
-            |}
-          """.stripMargin.encrypt
-        )
+        override def result: Future[WSResponse] = client(s"$testAppUrl/register")
+          .post(Json.parse(
+            s"""
+              |{
+              |   "username" : "testUserN",
+              |   "email" : "test@email.com",
+              |   "password" : "${"testPassword".sha512}",
+              |   "permissions" : [
+              |       "all"
+              |   ]
+              |}
+            """.stripMargin).encrypt
+          )
 
-        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", s"${SHA512.encrypt("testPassword")}", List("all"))))
+        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", "testPassword".sha512, List("all"))))
 
         awaitAndAssert(result) {
           _.status mustBe CONFLICT
@@ -75,20 +78,20 @@ class RegistrationISpec extends IntegrationSpec {
       }
 
       "the user name is already in use" in new ApiTest {
-        override def result: Future[WSResponse] = client(s"$testAppUrl/register").post(
-          s"""
-            |{
-            |   "username" : "testUserN",
-            |   "email" : "test@email.com",
-            |   "password" : "${SHA512.encrypt("testPassword")}",
-            |   "permissions" : [
-            |       "all"
-            |   ]
-            |}
-          """.stripMargin.encrypt
-        )
+        override def result: Future[WSResponse] = client(s"$testAppUrl/register")
+          .post(Json.parse(
+            s"""
+               |{
+               |   "username" : "testUserN",
+               |   "email" : "test@email.com",
+               |   "password" : "${"testPassword".sha512}",
+               |   "permissions" : [
+               |       "all"
+               |   ]
+               |}
+            """.stripMargin).encrypt)
 
-        await(repo.insertManagementAccount(Account("testId", "testUserN", "test1@email.com", s"${SHA512.encrypt("testPassword")}", List("all"))))
+        await(repo.insertManagementAccount(Account("testId", "testUserN", "test1@email.com", "testPassword".sha512, List("all"))))
 
         awaitAndAssert(result) {
           _.status mustBe CONFLICT
@@ -96,20 +99,20 @@ class RegistrationISpec extends IntegrationSpec {
       }
 
       "both the user name and email are in use" in new ApiTest {
-        override def result: Future[WSResponse] = client(s"$testAppUrl/register").post(
-          s"""
-            |{
-            |   "username" : "testUserN",
-            |   "email" : "test@email.com",
-            |   "password" : "${SHA512.encrypt("testPassword")}",
-            |   "permissions" : [
-            |       "all"
-            |   ]
-            |}
-          """.stripMargin.encrypt
-        )
+        override def result: Future[WSResponse] = client(s"$testAppUrl/register")
+          .post(Json.parse(
+            s"""
+               |{
+               |   "username" : "testUserN",
+               |   "email" : "test@email.com",
+               |   "password" : "${"testPassword".sha512}",
+               |   "permissions" : [
+               |       "all"
+               |   ]
+               |}
+            """.stripMargin).encrypt)
 
-        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", s"${SHA512.encrypt("testPassword")}", List("all"))))
+        await(repo.insertManagementAccount(Account("testId", "testUserN", "test@email.com", "testPassword".sha512, List("all"))))
 
         awaitAndAssert(result) {
           _.status mustBe CONFLICT
