@@ -16,10 +16,15 @@
 
 package models
 
+import com.cjwwdev.security.deobfuscation.{DeObfuscation, DeObfuscator, DecryptionError}
 import play.api.libs.json.{Json, OFormat}
 
 case class Credentials(username: String, password: String)
 
 object Credentials {
   implicit val format: OFormat[Credentials] = Json.format[Credentials]
+
+  implicit val deObfuscator: DeObfuscator[Credentials] = new DeObfuscator[Credentials] {
+    override def decrypt(value: String): Either[Credentials, DecryptionError] = DeObfuscation.deObfuscate[Credentials](value)
+  }
 }

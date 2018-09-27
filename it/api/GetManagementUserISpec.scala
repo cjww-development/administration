@@ -17,6 +17,7 @@
 package api
 
 import com.cjwwdev.implicits.ImplicitDataSecurity._
+import com.cjwwdev.security.deobfuscation.DeObfuscation._
 import models.Account
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
@@ -37,8 +38,8 @@ class GetManagementUserISpec extends IntegrationSpec {
         override def result: Future[WSResponse] = client(s"$testAppUrl/user/${testManagementAccount.managementId}").get()
 
         awaitAndAssert(result) { res =>
-          statusOf(res)                                                          mustBe OK
-          bodyAsJson[JsValue](res).\("body").as[String].decryptIntoType[JsValue] mustBe Json.parse(
+          statusOf(res)                                                  mustBe OK
+          bodyAsJson[JsValue](res).\("body").as[String].decrypt[JsValue] mustBe Left(Json.parse(
             s"""
               |{
               |   "managementId" : "${testManagementAccount.managementId}",
@@ -49,7 +50,7 @@ class GetManagementUserISpec extends IntegrationSpec {
               |   ]
               |}
             """.stripMargin
-          )
+          ))
         }
       }
     }
@@ -73,8 +74,14 @@ class GetManagementUserISpec extends IntegrationSpec {
         await(managementAccountRepository.insertManagementAccount(testManagementAccount))
 
         awaitAndAssert(result) { res =>
-          statusOf(res)                                                                 mustBe OK
-          jsonContent[JsValue](res).\("body").as[String].decryptIntoType[List[JsValue]] mustBe List(Json.toJson(testManagementAccount)(Account.outgoingAccountWrites))
+          statusOf(res)                                                   mustBe OK
+          jsonContent[JsValue](res).\("body").as[String].decrypt[JsValue] mustBe Left(Json.parse(
+            s"""
+              |[
+              |   ${Json.prettyPrint(Json.toJson(testManagementAccount)(Account.outgoingAccountWrites))}
+              |]
+            """.stripMargin
+          ))
         }
       }
     }

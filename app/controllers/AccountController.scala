@@ -16,12 +16,12 @@
 
 package controllers
 
+import com.cjwwdev.config.ConfigurationLoader
 import com.cjwwdev.implicits.ImplicitDataSecurity._
+import com.cjwwdev.security.obfuscation.Obfuscation._
 import com.cjwwdev.mongo.responses.{MongoFailedCreate, MongoFailedDelete, MongoSuccessCreate, MongoSuccessDelete}
-import com.cjwwdev.security.encryption.DataSecurity
 import common.{BackendController, MissingAccountException}
 import javax.inject.Inject
-
 import models.{Account, Credentials}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{ManagementAccountService, ValidationService}
@@ -31,6 +31,7 @@ import scala.concurrent.Future
 
 class DefaultAccountController @Inject()(val controllerComponents: ControllerComponents,
                                          val validationService: ValidationService,
+                                         val config: ConfigurationLoader,
                                          val managementAccountService: ManagementAccountService) extends AccountController
 
 trait AccountController extends BackendController {
@@ -40,7 +41,7 @@ trait AccountController extends BackendController {
 
   def createNewUser(): Action[String] = Action.async(parse.text) { implicit request =>
     applicationVerification {
-      withJsonBody[Account](Account.newAccountReads) { account =>
+      createNewFromRequest[Account](Account.newAccountReads) { account =>
         for {
           emailInUse    <- validationService.isEmailInUse(account.email)
           userNameInUse <- validationService.isUserNameInUse(account.username)
@@ -70,7 +71,7 @@ trait AccountController extends BackendController {
 
   def authenticateUser(): Action[String] = Action.async(parse.text) { implicit request =>
     applicationVerification {
-      withJsonBody[Credentials](Credentials.format) { credentials =>
+      withJsonBody[Credentials] { credentials =>
         managementAccountService.authenticateUser(credentials) map { managementId =>
           val (status, body) = managementId match {
             case Some(id) =>
@@ -95,7 +96,7 @@ trait AccountController extends BackendController {
   def getManagementUser(managementId: String): Action[AnyContent] = Action.async { implicit request =>
     applicationVerification {
       managementAccountService.getManagementUser("managementId", managementId) map { acc =>
-        withJsonResponseBody(OK, DataSecurity.encryptType(acc)(Account.outgoingAccountWrites)) { json =>
+        withJsonResponseBody(OK, acc.encrypt) { json =>
           Ok(json)
         }
       } recover {
@@ -110,7 +111,7 @@ trait AccountController extends BackendController {
     applicationVerification {
       managementAccountService.getAllManagementUsers map { users =>
         val (status, body) = if(users.nonEmpty) {
-          (OK, DataSecurity.encryptType(users)(Account.outgoingAccountListWrites))
+          (OK, users.encrypt)
         } else {
           (NO_CONTENT, "No management users")
         }

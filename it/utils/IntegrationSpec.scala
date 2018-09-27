@@ -17,8 +17,9 @@
 package utils
 
 import akka.util.Timeout
-import com.cjwwdev.http.headers.HeaderPackage
 import com.cjwwdev.implicits.ImplicitDataSecurity._
+import com.cjwwdev.http.headers.HeaderPackage
+import com.cjwwdev.http.headers.HeaderPackage._
 import com.cjwwdev.testing.integration.IntegrationTestSpec
 import com.cjwwdev.testing.integration.application.IntegrationApplication
 import com.cjwwdev.testing.integration.wiremock.WireMockSetup
@@ -45,8 +46,10 @@ trait IntegrationSpec
 
   override val appConfig = Map(
     "repositories.DefaultManagementAccountRepository.collection" -> "it-management-accounts",
-    "microservice.allowedApps"                                   -> "EjeNVhx_3N3Lr_VFJZdVWc47rWweHqRu4DBwFeVoStiN8X54rQ84JG4nJIgxaxynkrU59UfxZ9xAREaihbzNEm1dNd0O_YnX8q7kjqL6vfE",
-    "root.user"                                                  -> "hPYSDFsyQE5AfCe4ANk9D94MYsUJTvPU-E4kcV_19Rg0OZ0dUuDo5FcOlPMfKJEvTjDBSDlEaW1HSjS6xnVGu2GbYSLLgLWRWyjFii_fncYqAklrZo9SdxacYzy9t5NNtt4QkWA5zZ0_GvbvMlrs-ANByn14mb3H5VLpPGAPRJN9LMB82FWBZzciXvz57-2GIDbFoueUCpDXc7y0r5vnGPf_P7DBVZ--bV3qNRwm0_oE77zYu9ih7Hom9exbn7gcnDfalI5tji98f6QFQCknN2hFXeD-scWZJyad-VJPyhf9bgJUse4FpWN7OCZTEv591oLue38FA-PF3AWC_KyM_49kE-pH4ZtdBP4QhEgk8OUlNDiObaNwOi6tr0VkEDsq",
+    "microservice.allowedApps"                                   -> "SNuIUBkrTWDoXUis-W1k8RBMSSMg_nDXTW07Gpi9877j_UnRfEB4HK1nMdSha54DlyjxVsWH2Wiqkc3UMyIFT8Hz9LgbigxpL5BMk9Vd5Y0",
+    "root.username"                                              -> "cm9vdA==",
+    "root.email"                                                 -> "dGVzdEB0ZXN0LmNvbQ==",
+    "root.password"                                              -> "dGVzdGluZzEyMw==",
     "repositories.DefaultManagementAccountRepository.database"   -> "test-accounts"
   )
 
@@ -57,7 +60,7 @@ trait IntegrationSpec
   val testCookieId = generateTestSystemId(SESSION)
 
   def client(url: String): WSRequest = ws.url(url).withHeaders(
-    "cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", testCookieId).encryptType,
+    "cjww-headers" -> HeaderPackage("d6e3a79b-cb31-40a1-839a-530803d76156", Some(testCookieId)).encrypt,
     CONTENT_TYPE   -> TEXT
   )
 

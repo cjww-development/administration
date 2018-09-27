@@ -19,6 +19,7 @@ package jobs
 import akka.actor.ActorSystem
 import com.cjwwdev.logging.Logging
 import com.cjwwdev.implicits.ImplicitDataSecurity._
+import com.cjwwdev.security.obfuscation.Obfuscation._
 import com.cjwwdev.scheduling.{JobComplete, JobCompletionStatus, JobFailed, ScheduledJob}
 import javax.inject.Inject
 import play.api.Configuration
@@ -38,7 +39,7 @@ class DynamicDNSUpdateJob @Inject()(val actorSystem: ActorSystem,
 
   private val apiToken = config.getOptional[String]("dns.freedns-api.token")
 
-  override def scheduledJob: Future[JobCompletionStatus] = {
+  def scheduledJob: Future[JobCompletionStatus] = {
     apiToken match {
       case Some(token) => dnsService.updatePublicIP(token) map { ip =>
         logger.info(s"Dynamic DNS has been updated ${ip.encrypt}")
