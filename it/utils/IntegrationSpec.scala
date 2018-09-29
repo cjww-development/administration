@@ -74,10 +74,6 @@ trait IntegrationSpec
     )
   )
 
-  private def afterITest(): Unit = {
-    managementAccountRepository.collection.flatMap(_.drop(failIfNotFound = false))
-  }
-
   override def beforeEach(): Unit = {
     super.beforeEach()
     resetWm()
@@ -85,17 +81,18 @@ trait IntegrationSpec
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+    await(managementAccountRepository.collection.flatMap(_.drop(failIfNotFound = false)))
     startWm()
   }
 
   override def afterEach(): Unit = {
     super.afterEach()
-    afterITest()
+    await(managementAccountRepository.collection.flatMap(_.drop(failIfNotFound = false)))
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    afterITest()
+    await(managementAccountRepository.collection.flatMap(_.drop(failIfNotFound = false)))
     stopWm()
   }
 }
