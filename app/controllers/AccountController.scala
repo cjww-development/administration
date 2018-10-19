@@ -32,7 +32,9 @@ import scala.concurrent.Future
 class DefaultAccountController @Inject()(val controllerComponents: ControllerComponents,
                                          val validationService: ValidationService,
                                          val config: ConfigurationLoader,
-                                         val managementAccountService: ManagementAccountService) extends AccountController
+                                         val managementAccountService: ManagementAccountService) extends AccountController {
+  override val appId: String = config.getServiceId(config.get[String]("appName"))
+}
 
 trait AccountController extends BackendController {
 

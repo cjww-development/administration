@@ -31,12 +31,10 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import services.{ManagementAccountService, ValidationService}
 
-class AccountControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
-
-  val configuration = app.injector.instanceOf[DefaultConfigurationLoader]
+class AccountControllerSpec extends ControllerSpec {
 
   private val testController = new AccountController {
-    override protected val config: ConfigurationLoader                = configuration
+    override val appId: String                                        = "testAppId"
     override val managementAccountService: ManagementAccountService   = mockManagementAccountService
     override val validationService: ValidationService                 = mockValidationService
     override protected def controllerComponents: ControllerComponents = stubControllerComponents()

@@ -22,8 +22,8 @@ object AppDependencies {
 }
 
 private object CompileDependencies {
-  private val httpVerbsVersion     = "3.2.1"
-  private val authorisationVersion = "4.4.0"
+  private val httpVerbsVersion     = "3.3.0"
+  private val authorisationVersion = "4.5.0"
   private val appUtilsVersion      = "4.3.2"
   private val reactiveMongoVersion = "7.2.1"
   private val serviceHealthVersion = "0.3.0"
