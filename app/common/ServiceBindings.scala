@@ -23,8 +23,8 @@ import common.startup.{DefaultRootUser, RootUser}
 import connectors.{DNSConnector, DefaultDNSConnector}
 import controllers.{AccountController, DefaultAccountController}
 import jobs.DynamicDNSUpdateJob
-import play.api.{Configuration, Environment}
 import play.api.inject.{Binding, Module}
+import play.api.{Configuration, Environment}
 import repositories.{DefaultManagementAccountRepository, ManagementAccountRepository}
 import services._
 

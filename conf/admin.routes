@@ -1,2 +1,3 @@
 ->          /administration                 app.Routes
 ->          /                               health.Routes
+GET         /admin/metrics                  com.cjwwdev.metrics.MetricsController.metricsToJson
