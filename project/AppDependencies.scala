@@ -27,6 +27,7 @@ private object CompileDependencies {
   private val appUtilsVersion      = "4.3.2"
   private val reactiveMongoVersion = "7.2.1"
   private val serviceHealthVersion = "0.3.0"
+  private val metricsVersion       = "1.0.3"
 
   private val playImports: Seq[ModuleID] = Seq(filters, guice)
 
@@ -35,7 +36,8 @@ private object CompileDependencies {
     "com.cjww-dev.libs" % "authorisation_2.12"         % authorisationVersion,
     "com.cjww-dev.libs" % "application-utilities_2.12" % appUtilsVersion,
     "com.cjww-dev.libs" % "reactive-mongo_2.12"        % reactiveMongoVersion,
-    "com.cjww-dev.libs" % "service-health_2.12"        % serviceHealthVersion
+    "com.cjww-dev.libs" % "service-health_2.12"        % serviceHealthVersion,
+    "com.cjww-dev.libs" % "metrics-reporter_2.12"      % metricsVersion
   )
 
   def apply(): Seq[ModuleID] = compileDependencies ++ playImports
