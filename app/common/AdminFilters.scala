@@ -18,8 +18,9 @@
 package common
 
 import com.cjwwdev.filters.RequestLoggingFilter
+import com.kenshoo.play.metrics.MetricsFilter
 import javax.inject.Inject
 import play.api.http.DefaultHttpFilters
 
-class AdminFilters @Inject()(requestLoggingFilter: RequestLoggingFilter)
-  extends DefaultHttpFilters(requestLoggingFilter)
+class AdminFilters @Inject()(requestLoggingFilter: RequestLoggingFilter, metricsFilter: MetricsFilter)
+  extends DefaultHttpFilters(requestLoggingFilter, metricsFilter)
