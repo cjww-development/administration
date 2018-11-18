@@ -57,7 +57,8 @@ class ServiceBindings extends Module {
   private def bindServices(): Seq[Binding[_]] = Seq(
     bind(classOf[ManagementAccountService]).to(classOf[DefaultManagementAccountService]).eagerly(),
     bind(classOf[ValidationService]).to(classOf[DefaultValidationService]).eagerly(),
-    bind(classOf[DNSService]).to(classOf[DefaultDNSService]).eagerly()
+    bind(classOf[DNSService]).to(classOf[DefaultDNSService]).eagerly(),
+    bind(classOf[MetricsService]).to(classOf[DefaultMetricsService]).eagerly()
   )
 
   private def bindControllers(): Seq[Binding[_]] = Seq(

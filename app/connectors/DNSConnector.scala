@@ -20,11 +20,12 @@ import com.cjwwdev.logging.Logging
 import javax.inject.Inject
 import play.api.Configuration
 import play.api.libs.ws.{WSClient, WSResponse}
+import services.MetricsService
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, ExecutionContext => ExC}
 
 class DefaultDNSConnector @Inject()(val wsClient: WSClient,
+                                    val metricsService: MetricsService,
                                     val config: Configuration) extends DNSConnector {
   override protected val updateURL = config.get[String]("dns.freedns-api.url")
   override protected val ipfyUrl   = config.get[String]("dns.ipfy.url")
@@ -33,17 +34,22 @@ class DefaultDNSConnector @Inject()(val wsClient: WSClient,
 trait DNSConnector extends Logging {
 
   protected val wsClient: WSClient
+  protected val metricsService: MetricsService
 
   protected val updateURL: String
   protected val ipfyUrl: String
 
-  def getPublicIPAddress: Future[String] = {
-    wsClient.url(ipfyUrl).get() map {
-      _.json.\("ip").as[String]
+  def getPublicIPAddress(implicit ec: ExC): Future[String] = {
+    metricsService.outboundCallResponseTime("get-public-ip") {
+      wsClient.url(ipfyUrl).get() map {
+        _.json.\("ip").as[String]
+      }
     }
   }
 
-  def updateFreeDNS(token: String): Future[WSResponse] = {
-    wsClient.url(s"$updateURL$token").get()
+  def updateFreeDNS(token: String)(implicit ec: ExC): Future[WSResponse] = {
+    metricsService.outboundCallResponseTime("update-dynamic-dns") {
+      wsClient.url(s"$updateURL$token").get()
+    }
   }
 }

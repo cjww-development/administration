@@ -20,7 +20,7 @@ import com.cjwwdev.mongo.responses._
 import common.MissingAccountException
 import helpers.other.Fixtures
 import models.Account
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.BeforeAndAfterEach
@@ -42,37 +42,37 @@ trait MockManagementAccountRepository extends BeforeAndAfterEach with MockitoSug
   }
 
   def mockInsertManagementAccount(success: Boolean): OngoingStubbing[Future[MongoCreateResponse]] = {
-    when(mockManagementAccountRepository.insertManagementAccount(ArgumentMatchers.any()))
+    when(mockManagementAccountRepository.insertManagementAccount(any())(any()))
       .thenReturn(Future(if(success) MongoSuccessCreate else MongoFailedCreate))
   }
 
   def mockGetManagementUser(found: Boolean): OngoingStubbing[Future[Option[Account]]] = {
-    when(mockManagementAccountRepository.getManagementUser(ArgumentMatchers.any()))
+    when(mockManagementAccountRepository.getManagementUser(any())(any()))
       .thenReturn(Future(if(found) Some(testManagementAccount) else None))
   }
 
   def mockGetAllManagementUsers(populated: Boolean): OngoingStubbing[Future[List[Account]]] = {
-    when(mockManagementAccountRepository.getAllManagementUsers)
+    when(mockManagementAccountRepository.getAllManagementUsers(any()))
       .thenReturn(Future(if(populated) List(testManagementAccount) else List()))
   }
 
   def mockFailedGetManagementUser: OngoingStubbing[Future[Option[Account]]] = {
-    when(mockManagementAccountRepository.getManagementUser(ArgumentMatchers.any()))
+    when(mockManagementAccountRepository.getManagementUser(any())(any()))
       .thenReturn(Future.failed(new MissingAccountException("No account found")))
   }
 
   def mockUpdateEmail(updated: Boolean): OngoingStubbing[Future[MongoUpdatedResponse]] = {
-    when(mockManagementAccountRepository.updateEmail(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(mockManagementAccountRepository.updateEmail(any(), any())(any()))
       .thenReturn(Future(if(updated) MongoSuccessUpdate else MongoFailedUpdate))
   }
 
   def mockUpdatePassword(updated: Boolean): OngoingStubbing[Future[MongoUpdatedResponse]] = {
-    when(mockManagementAccountRepository.updatePassword(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(mockManagementAccountRepository.updatePassword(any(), any(), any())(any()))
       .thenReturn(Future(if(updated) MongoSuccessUpdate else MongoFailedUpdate))
   }
 
   def mockDeleteManagementUser(deleted: Boolean): OngoingStubbing[Future[MongoDeleteResponse]] = {
-    when(mockManagementAccountRepository.deleteManagementUser(ArgumentMatchers.any()))
+    when(mockManagementAccountRepository.deleteManagementUser(any())(any()))
       .thenReturn(Future(if(deleted) MongoSuccessDelete else MongoFailedDelete))
   }
 }

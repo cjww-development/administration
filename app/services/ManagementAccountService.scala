@@ -24,8 +24,7 @@ import models.{Account, Credentials}
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext => ExC, Future}
 
 class DefaultManagementAccountService @Inject()(val managementAccountRepository: ManagementAccountRepository) extends ManagementAccountService
 
@@ -33,11 +32,11 @@ trait ManagementAccountService {
 
   val managementAccountRepository: ManagementAccountRepository
 
-  def insertNewManagementUser(account: Account): Future[MongoCreateResponse] = {
+  def insertNewManagementUser(account: Account)(implicit ec: ExC): Future[MongoCreateResponse] = {
     managementAccountRepository.insertManagementAccount(account)
   }
 
-  def getManagementUser(key: String, value: String): Future[Account] = {
+  def getManagementUser(key: String, value: String)(implicit ec: ExC): Future[Account] = {
     val selector = key match {
       case "managementId" => AccountSelectors.managementIdSelector(value)
       case "username"     => AccountSelectors.userNameSelector(value)
@@ -50,21 +49,21 @@ trait ManagementAccountService {
     }
   }
 
-  def getAllManagementUsers: Future[List[Account]] = {
+  def getAllManagementUsers(implicit ec: ExC): Future[List[Account]] = {
     managementAccountRepository.getAllManagementUsers
   }
 
-  def authenticateUser(credentials: Credentials): Future[Option[String]] = {
+  def authenticateUser(credentials: Credentials)(implicit ec: ExC): Future[Option[String]] = {
     managementAccountRepository.getManagementUser(AccountSelectors.loginSelector(credentials)) map {
       _.map(_.managementId)
     }
   }
 
-  def updateEmail(managementId: String, email: String): Future[MongoUpdatedResponse] = {
+  def updateEmail(managementId: String, email: String)(implicit ec: ExC): Future[MongoUpdatedResponse] = {
     managementAccountRepository.updateEmail(managementId, email)
   }
 
-  def updatePassword(managementId: String, oldPassword: String, newPassword: String): Future[MongoUpdatedResponse] = {
+  def updatePassword(managementId: String, oldPassword: String, newPassword: String)(implicit ec: ExC): Future[MongoUpdatedResponse] = {
     for {
       acc <- managementAccountRepository.getManagementUser(AccountSelectors.passwordSelector(managementId, oldPassword)) map {
         _.getOrElse(throw new MissingAccountException(s"No account found for managementId $managementId"))
@@ -73,7 +72,7 @@ trait ManagementAccountService {
     } yield mur
   }
 
-  def deleteUser(managementId: String): Future[MongoDeleteResponse] = {
+  def deleteUser(managementId: String)(implicit ec: ExC): Future[MongoDeleteResponse] = {
     managementAccountRepository.deleteManagementUser(managementId)
   }
 }

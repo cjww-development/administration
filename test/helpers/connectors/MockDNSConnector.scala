@@ -18,7 +18,7 @@ package helpers.connectors
 
 import connectors.DNSConnector
 import helpers.other.Fixtures
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.BeforeAndAfterEach
@@ -40,12 +40,12 @@ trait MockDNSConnector extends BeforeAndAfterEach with MockitoSugar with Fixture
   val mockDNSConnector = mock[DNSConnector]
 
   def mockGetPublicIPAddress(ip: String): OngoingStubbing[Future[String]] = {
-    when(mockDNSConnector.getPublicIPAddress)
+    when(mockDNSConnector.getPublicIPAddress(any()))
       .thenReturn(Future(ip))
   }
 
   def mockUpdateFreeDNS: OngoingStubbing[Future[WSResponse]] = {
-    when(mockDNSConnector.updateFreeDNS(ArgumentMatchers.any()))
+    when(mockDNSConnector.updateFreeDNS(any())(any()))
       .thenReturn(Future(fakeWSResponse))
   }
 

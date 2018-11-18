@@ -20,21 +20,20 @@ import javax.inject.Inject
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext => ExC, Future}
 
 class DefaultValidationService @Inject()(val managementAccountRepository: ManagementAccountRepository) extends ValidationService
 
 trait ValidationService {
   val managementAccountRepository: ManagementAccountRepository
 
-  def isEmailInUse(email: String): Future[Boolean] = {
+  def isEmailInUse(email: String)(implicit ec: ExC): Future[Boolean] = {
     managementAccountRepository.getManagementUser(AccountSelectors.emailSelector(email)) map {
       _.isDefined
     }
   }
 
-  def isUserNameInUse(username: String): Future[Boolean] = {
+  def isUserNameInUse(username: String)(implicit ec: ExC): Future[Boolean] = {
     managementAccountRepository.getManagementUser(AccountSelectors.userNameSelector(username)) map {
       _.isDefined
     }

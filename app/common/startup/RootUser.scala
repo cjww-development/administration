@@ -25,12 +25,12 @@ import models.Account
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext => ExC, Future}
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class DefaultRootUser @Inject()(val managementAccountRepository: ManagementAccountRepository,
-                                val config: ConfigurationLoader) extends RootUser {
+                                val config: ConfigurationLoader,
+                                implicit val ec: ExC) extends RootUser {
   override val userName = new String(Base64.getDecoder.decode(config.get[String]("root.username")), "UTF-8")
   override val email    = new String(Base64.getDecoder.decode(config.get[String]("root.email")),    "UTF-8")
   override val password = new String(Base64.getDecoder.decode(config.get[String]("root.password")), "UTF-8")
@@ -54,7 +54,7 @@ trait RootUser {
 
   private def await[T](future: Future[T]): T = Await.result(future, 10.seconds)
 
-  def setupRootUser(): Boolean = {
+  def setupRootUser()(implicit ec: ExC): Boolean = {
     await(for {
       existingUser <- managementAccountRepository.getManagementUser(AccountSelectors.rootSelector(rootAccount))
       insertUser   <- if(existingUser.isEmpty) {
