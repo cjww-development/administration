@@ -24,12 +24,13 @@ import com.cjwwdev.security.deobfuscation.{DeObfuscation, DeObfuscator, Decrypti
 import play.api.libs.json.{Json, Reads}
 import play.api.mvc.{BaseController, Request, Result}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext => ExC, Future}
 import scala.reflect.ClassTag
 import scala.util.Try
 
 trait BackendController extends BaseController with RequestParsers with IdentifierValidation with BaseAuth with ApiResponse {
+
+  implicit val ec: ExC
 
   def createNewFromRequest[T](reads: Reads[T])(f: T => Future[Result])(implicit request: Request[String], tag: ClassTag[T]): Future[Result] = {
     val deObfuscator: DeObfuscator[T] = new DeObfuscator[T] {

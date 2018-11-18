@@ -19,6 +19,8 @@ package services
 import helpers.services.ServiceSpec
 import repositories.ManagementAccountRepository
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class ValidationServiceSpec extends ServiceSpec {
 
   private val testService = new ValidationService {

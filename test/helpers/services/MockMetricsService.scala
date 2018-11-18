@@ -16,19 +16,17 @@
 
 package helpers.services
 
-import com.cjwwdev.testing.common.FutureHelpers
-import helpers.connectors.MockDNSConnector
-import helpers.other.{Fixtures, TestDataGenerator}
-import helpers.repositories.MockManagementAccountRepository
+import com.kenshoo.play.metrics.Metrics
 import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
+import services.MetricsService
 
-trait ServiceSpec
-  extends PlaySpec
-    with MockitoSugar
-    with FutureHelpers
-    with MockManagementAccountRepository
-    with MockDNSConnector
-    with MockMetricsService
-    with Fixtures
-    with TestDataGenerator
+trait MockMetricsService extends MockitoSugar {
+
+  private val mockMetrics: Metrics = mock[Metrics]
+
+  val mockMetricsService: MetricsService = new MetricsService {
+    override val metrics: Metrics = mockMetrics
+    override val enabled: Boolean = false
+  }
+
+}

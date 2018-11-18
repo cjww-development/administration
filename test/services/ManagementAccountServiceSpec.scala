@@ -22,6 +22,8 @@ import helpers.services.ServiceSpec
 import models.Credentials
 import repositories.ManagementAccountRepository
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class ManagementAccountServiceSpec extends ServiceSpec {
 
   private val testService = new ManagementAccountService {

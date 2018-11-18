@@ -26,13 +26,12 @@ import play.api.Configuration
 import services.DNSService
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext => ExC, Future}
 
 class DynamicDNSUpdateJob @Inject()(val actorSystem: ActorSystem,
                                     val config: Configuration,
                                     val dnsService: DNSService,
-                                    val executionContext: ExecutionContext) extends ScheduledJob with Logging {
+                                    implicit val executionContext: ExC) extends ScheduledJob with Logging {
   override val jobName  = "dns-update"
   override val enabled  = config.get[Boolean](s"jobs.$jobName.enabled")
   override val interval = config.get[Long](s"jobs.$jobName.interval")

@@ -16,7 +16,6 @@
 
 package controllers
 
-import com.cjwwdev.config.{ConfigurationLoader, DefaultConfigurationLoader}
 import com.cjwwdev.http.headers.HeaderPackage
 import com.cjwwdev.implicits.ImplicitDataSecurity._
 import com.cjwwdev.implicits.ImplicitJsValues._
@@ -24,12 +23,14 @@ import com.cjwwdev.security.deobfuscation.DeObfuscation._
 import com.cjwwdev.security.obfuscation.Obfuscation._
 import helpers.controllers.ControllerSpec
 import models.Account
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import services.{ManagementAccountService, ValidationService}
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class AccountControllerSpec extends ControllerSpec {
 
@@ -38,6 +39,7 @@ class AccountControllerSpec extends ControllerSpec {
     override val managementAccountService: ManagementAccountService   = mockManagementAccountService
     override val validationService: ValidationService                 = mockValidationService
     override protected def controllerComponents: ControllerComponents = stubControllerComponents()
+    override implicit val ec: ExecutionContext                        = global
   }
 
   def postRequest: FakeRequest[String] = FakeRequest()

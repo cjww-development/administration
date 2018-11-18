@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2018 CJWW Development
  *
@@ -18,7 +17,7 @@
 package helpers.services
 
 import helpers.other.Fixtures
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.BeforeAndAfterEach
@@ -40,12 +39,12 @@ trait MockValidationService extends BeforeAndAfterEach with MockitoSugar with Fi
   }
 
   def mockIsUserNameInUse(inUse: Boolean): OngoingStubbing[Future[Boolean]] = {
-    when(mockValidationService.isUserNameInUse(ArgumentMatchers.any()))
+    when(mockValidationService.isUserNameInUse(any())(any()))
       .thenReturn(Future(inUse))
   }
 
   def mockIsEmailInUse(inUse: Boolean): OngoingStubbing[Future[Boolean]] = {
-    when(mockValidationService.isEmailInUse(ArgumentMatchers.any()))
+    when(mockValidationService.isEmailInUse(any())(any()))
       .thenReturn(Future(inUse))
   }
 }

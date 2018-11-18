@@ -18,6 +18,8 @@ package services
 
 import helpers.services.ServiceSpec
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class DNSServiceSpec extends ServiceSpec {
 
   val testService = new DNSService {

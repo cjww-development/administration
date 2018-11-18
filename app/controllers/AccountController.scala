@@ -26,13 +26,13 @@ import models.{Account, Credentials}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{ManagementAccountService, ValidationService}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext => ExC, Future}
 
 class DefaultAccountController @Inject()(val controllerComponents: ControllerComponents,
                                          val validationService: ValidationService,
                                          val config: ConfigurationLoader,
-                                         val managementAccountService: ManagementAccountService) extends AccountController {
+                                         val managementAccountService: ManagementAccountService,
+                                         implicit val ec: ExC) extends AccountController {
   override val appId: String = config.getServiceId(config.get[String]("appName"))
 }
 
