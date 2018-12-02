@@ -20,6 +20,7 @@ import com.cjwwdev.mongo.responses._
 import common.MissingAccountException
 import helpers.services.ServiceSpec
 import models.Credentials
+import play.api.test.FakeRequest
 import repositories.ManagementAccountRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,6 +30,8 @@ class ManagementAccountServiceSpec extends ServiceSpec {
   private val testService = new ManagementAccountService {
     override val managementAccountRepository: ManagementAccountRepository = mockManagementAccountRepository
   }
+
+  implicit val req = FakeRequest()
 
   "insertNewManagementUser" should {
     "return a MongoSuccessCreate" in {

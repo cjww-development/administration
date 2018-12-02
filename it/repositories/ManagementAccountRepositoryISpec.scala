@@ -18,12 +18,15 @@ package repositories
 
 import com.cjwwdev.mongo.responses.{MongoSuccessCreate, MongoSuccessUpdate}
 import models.Account
+import play.api.test.FakeRequest
 import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
 import selectors.AccountSelectors
 import utils.IntegrationSpec
 
 class ManagementAccountRepositoryISpec extends IntegrationSpec {
+
+  implicit val req = FakeRequest()
 
   "insertManagementAccount" should {
     "successfully insert a new management account" in {

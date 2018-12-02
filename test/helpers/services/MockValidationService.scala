@@ -39,12 +39,12 @@ trait MockValidationService extends BeforeAndAfterEach with MockitoSugar with Fi
   }
 
   def mockIsUserNameInUse(inUse: Boolean): OngoingStubbing[Future[Boolean]] = {
-    when(mockValidationService.isUserNameInUse(any())(any()))
+    when(mockValidationService.isUserNameInUse(any())(any(), any()))
       .thenReturn(Future(inUse))
   }
 
   def mockIsEmailInUse(inUse: Boolean): OngoingStubbing[Future[Boolean]] = {
-    when(mockValidationService.isEmailInUse(any())(any()))
+    when(mockValidationService.isEmailInUse(any())(any(), any()))
       .thenReturn(Future(inUse))
   }
 }

@@ -24,7 +24,7 @@ import com.cjwwdev.security.deobfuscation.{DeObfuscation, DeObfuscator, Decrypti
 import play.api.libs.json.{Json, Reads}
 import play.api.mvc.{BaseController, Request, Result}
 
-import scala.concurrent.{ExecutionContext => ExC, Future}
+import scala.concurrent.{Future, ExecutionContext => ExC}
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -41,10 +41,10 @@ trait BackendController extends BaseController with RequestParsers with Identifi
       data => f(data),
       err  => Try(Json.parse(err.message)).fold(
         _ => withFutureJsonResponseBody(BAD_REQUEST, s"Couldn't decrypt request body on ${request.path}") { json =>
-          Future(BadRequest(json))
+          Future.successful(BadRequest(json))
         },
         jsError => withFutureJsonResponseBody(BAD_REQUEST, jsError, "Decrypted json was missing a field") { json =>
-          Future(BadRequest(json))
+          Future.successful(BadRequest(json))
         }
       )
     )

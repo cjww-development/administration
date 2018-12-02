@@ -16,13 +16,14 @@
 
 package repositories
 
-import com.cjwwdev.logging.Logging
+import com.cjwwdev.logging.output.Logger
 import com.cjwwdev.mongo.DatabaseRepository
 import com.cjwwdev.mongo.connection.ConnectionSettings
 import com.cjwwdev.mongo.responses._
 import javax.inject.Inject
 import models.Account
 import play.api.Configuration
+import play.api.mvc.Request
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
@@ -34,7 +35,7 @@ import scala.concurrent.{Future, ExecutionContext => ExC}
 class DefaultManagementAccountRepository @Inject()(val config: Configuration,
                                                    val metricsService: MetricsService) extends ManagementAccountRepository with ConnectionSettings
 
-trait ManagementAccountRepository extends DatabaseRepository with Logging {
+trait ManagementAccountRepository extends DatabaseRepository with Logger {
 
   val metricsService: MetricsService
 
@@ -65,15 +66,16 @@ trait ManagementAccountRepository extends DatabaseRepository with Logging {
     )
   )
 
-  def insertManagementAccount(account: Account)(implicit ec: ExC): Future[MongoCreateResponse] = {
+  def insertManagementAccount(account: Account)(implicit ec: ExC, request: Request[_]): Future[MongoCreateResponse] = {
     metricsService.mongoQueryResponseTime(s"$collectionName-insert-management-account") {
       for {
         col <- collection
         wr  <- col.insert[Account](account)
       } yield if(wr.ok) {
+        LogAt.info(s"[insertManagementAccount] - Management user ${account.managementId} successfully created")
         MongoSuccessCreate
       } else {
-        wr.writeErrors foreach(we => logger.error(s"code=[${we.code}] errormessage=[${we.errmsg}]"))
+        wr.writeErrors foreach(we => LogAt.error(s"[insertManagementAccount] - code=[${we.code}] errormessage=[${we.errmsg}]"))
         MongoFailedCreate
       }
     }
@@ -97,44 +99,46 @@ trait ManagementAccountRepository extends DatabaseRepository with Logging {
     }
   }
 
-  def updateEmail(managementId: String, email: String)(implicit ec: ExC): Future[MongoUpdatedResponse] = {
+  def updateEmail(managementId: String, email: String)(implicit ec: ExC, request: Request[_]): Future[MongoUpdatedResponse] = {
     metricsService.mongoQueryResponseTime(s"$collectionName-update-email") {
       for {
         col <- collection
         uwr <- col.update(AccountSelectors.managementIdSelector(managementId), BSONDocument("$set" -> BSONDocument("email" -> email)))
       } yield if(uwr.ok) {
+        LogAt.info(s"[updateEmail] - Successfully updated email for user $managementId")
         MongoSuccessUpdate
       } else {
-        uwr.writeErrors foreach(we => logger.error(s"code=[${we.code}] errormessage=[${we.errmsg}]"))
+        uwr.writeErrors foreach(we => LogAt.error(s"[updateEmail] - code=[${we.code}] errormessage=[${we.errmsg}]"))
         MongoFailedUpdate
       }
     }
   }
 
-  def updatePassword(managementId: String, oldPassword: String, newPassword: String)(implicit ec: ExC): Future[MongoUpdatedResponse] = {
+  def updatePassword(managementId: String, oldPassword: String, newPassword: String)(implicit ec: ExC, request: Request[_]): Future[MongoUpdatedResponse] = {
     metricsService.mongoQueryResponseTime(s"$collectionName-update-password") {
       for {
         col <- collection
         uwr <- col.update(AccountSelectors.passwordSelector(managementId, oldPassword), BSONDocument("$set" -> BSONDocument("password" -> newPassword)))
       } yield if(uwr.ok) {
+        LogAt.info(s"[updatePassword] - Successfully updated email for user $managementId")
         MongoSuccessUpdate
       } else {
-        uwr.writeErrors foreach(we => logger.error(s"code=[${we.code}] errormessage=[${we.errmsg}]"))
+        uwr.writeErrors foreach(we => LogAt.error(s"[updatePassword] - code=[${we.code}] errormessage=[${we.errmsg}]"))
         MongoFailedUpdate
       }
     }
   }
 
-  def deleteManagementUser(managementId: String)(implicit ec: ExC): Future[MongoDeleteResponse] = {
+  def deleteManagementUser(managementId: String)(implicit ec: ExC, request: Request[_]): Future[MongoDeleteResponse] = {
     metricsService.mongoQueryResponseTime(s"$collectionName-delete-management-user") {
       for {
         col <- collection
         del <- col.remove[BSONDocument](AccountSelectors.managementIdSelector(managementId))
       } yield if(del.ok) {
-        logger.info(s"deleted user $managementId")
+        LogAt.info(s"[deleteManagementUser] - deleted user $managementId")
         MongoSuccessDelete
       } else {
-        logger.error(s"Failed to delete user $managementId")
+        LogAt.error(s"[deleteManagementUser] - ssFailed to delete user $managementId")
         MongoFailedDelete
       }
     }

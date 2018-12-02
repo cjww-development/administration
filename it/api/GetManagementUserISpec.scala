@@ -21,6 +21,7 @@ import com.cjwwdev.security.deobfuscation.DeObfuscation._
 import models.Account
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
+import play.api.test.FakeRequest
 import repositories.ManagementAccountRepository
 import utils.IntegrationSpec
 
@@ -29,6 +30,8 @@ import scala.concurrent.Future
 class GetManagementUserISpec extends IntegrationSpec {
 
   lazy val repo = app.injector.instanceOf[ManagementAccountRepository]
+
+  implicit val req = FakeRequest()
 
   "/user/:managementId" should {
     "return an Ok" when {

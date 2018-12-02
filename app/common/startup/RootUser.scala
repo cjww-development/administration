@@ -19,14 +19,19 @@ package common.startup
 import java.util.{Base64, UUID}
 
 import com.cjwwdev.config.ConfigurationLoader
+import com.cjwwdev.logging.Logging
+import com.cjwwdev.request.RequestBuilder._
 import com.cjwwdev.security.sha.SHA512
 import javax.inject.Inject
 import models.Account
+import play.api.libs.typedmap.TypedMap
+import play.api.mvc.request.{RemoteConnection, RequestTarget}
+import play.api.mvc.{Headers, RequestHeader}
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
 
-import scala.concurrent.{Await, ExecutionContext => ExC, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future, ExecutionContext => ExC}
 
 class DefaultRootUser @Inject()(val managementAccountRepository: ManagementAccountRepository,
                                 val config: ConfigurationLoader,
@@ -37,7 +42,7 @@ class DefaultRootUser @Inject()(val managementAccountRepository: ManagementAccou
   setupRootUser()
 }
 
-trait RootUser {
+trait RootUser extends Logging {
   val managementAccountRepository: ManagementAccountRepository
 
   val userName: String
@@ -55,12 +60,22 @@ trait RootUser {
   private def await[T](future: Future[T]): T = Await.result(future, 10.seconds)
 
   def setupRootUser()(implicit ec: ExC): Boolean = {
+    implicit val req = buildEmptyRequest(new RequestHeader {
+      override def connection: RemoteConnection = ???
+      override def method: String = ???
+      override def target: RequestTarget = ???
+      override def version: String = ???
+      override def headers: Headers = Headers("requestId" -> "-")
+      override def attrs: TypedMap = ???
+    })
     await(for {
       existingUser <- managementAccountRepository.getManagementUser(AccountSelectors.rootSelector(rootAccount))
       insertUser   <- if(existingUser.isEmpty) {
+        logger.warn("[setupRootUser] - No Root user found; inserting root user credentials")
         managementAccountRepository.insertManagementAccount(rootAccount) map(_ => true)
       } else {
-        Future(false)
+        logger.info("[setupRootUser] - Root user detected; proceeding with service boot")
+        Future.successful(false)
       }
     } yield insertUser)
   }

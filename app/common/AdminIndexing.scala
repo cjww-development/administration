@@ -21,7 +21,10 @@ import com.cjwwdev.mongo.indexes.RepositoryIndexer
 import javax.inject.Inject
 import repositories.ManagementAccountRepository
 
-class AdminIndexing @Inject()(managementAccountRepository: ManagementAccountRepository) extends RepositoryIndexer {
+import scala.concurrent.ExecutionContext
+
+class AdminIndexing @Inject()(managementAccountRepository: ManagementAccountRepository,
+                              implicit val ec: ExecutionContext) extends RepositoryIndexer {
   override val repositories: Seq[DatabaseRepository] = Seq(managementAccountRepository)
   runIndexing
 }

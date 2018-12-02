@@ -17,6 +17,7 @@
 package common
 
 import com.cjwwdev.config.{ConfigurationLoader, DefaultConfigurationLoader}
+import com.cjwwdev.logging.filters.{DefaultRequestLoggingFilter, RequestLoggingFilter}
 import com.cjwwdev.mongo.indexes.RepositoryIndexer
 import com.cjwwdev.scheduling.ScheduledJob
 import common.startup.{DefaultRootUser, RootUser}
@@ -35,7 +36,8 @@ class ServiceBindings extends Module {
 
   private def bindOther(): Seq[Binding[_]] = Seq(
     bind(classOf[ConfigurationLoader]).to(classOf[DefaultConfigurationLoader]).eagerly(),
-    bind(classOf[RepositoryIndexer]).to(classOf[AdminIndexing]).eagerly()
+    bind(classOf[RepositoryIndexer]).to(classOf[AdminIndexing]).eagerly(),
+    bind(classOf[RequestLoggingFilter]).to(classOf[DefaultRequestLoggingFilter]).eagerly()
   )
 
   private def bindRepositories(): Seq[Binding[_]] = Seq(

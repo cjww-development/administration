@@ -21,7 +21,7 @@ import com.codahale.metrics.Timer
 import com.kenshoo.play.metrics.Metrics
 import javax.inject.Inject
 
-import scala.concurrent.{ExecutionContext => ExC, Future}
+import scala.concurrent.{Future, ExecutionContext => ExC}
 
 class DefaultMetricsService @Inject()(val config: ConfigurationLoader,
                                       val metrics: Metrics) extends MetricsService {

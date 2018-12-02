@@ -17,16 +17,16 @@
 package jobs
 
 import akka.actor.ActorSystem
-import com.cjwwdev.logging.Logging
 import com.cjwwdev.implicits.ImplicitDataSecurity._
-import com.cjwwdev.security.obfuscation.Obfuscation._
+import com.cjwwdev.logging.Logging
 import com.cjwwdev.scheduling.{JobComplete, JobCompletionStatus, JobFailed, ScheduledJob}
+import com.cjwwdev.security.obfuscation.Obfuscation._
 import javax.inject.Inject
 import play.api.Configuration
 import services.DNSService
 
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext => ExC, Future}
+import scala.concurrent.{Future, ExecutionContext => ExC}
 
 class DynamicDNSUpdateJob @Inject()(val actorSystem: ActorSystem,
                                     val config: Configuration,
@@ -41,18 +41,18 @@ class DynamicDNSUpdateJob @Inject()(val actorSystem: ActorSystem,
   def scheduledJob: Future[JobCompletionStatus] = {
     apiToken match {
       case Some(token) => dnsService.updatePublicIP(token) map { ip =>
-        logger.info(s"Dynamic DNS has been updated ${ip.encrypt}")
+        logger.info(s"[DDNS] - Dynamic DNS has been updated ${ip.encrypt}")
         JobComplete
       }
       case None        =>
-        logger.warn("No DNS API token found; updating DNS entry aborted")
-        Future(JobFailed)
+        logger.warn("[DDNS] - No DNS API token found; updating DNS entry aborted")
+        Future.successful(JobFailed)
     }
   }
 
   if(enabled) {
     actorSystem.scheduler.schedule(initialDelay = 0.seconds, interval = interval.second)(scheduledJob)
   } else {
-    Future(JobFailed)
+    Future.successful(JobFailed)
   }
 }

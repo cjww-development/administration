@@ -42,7 +42,7 @@ trait MockManagementAccountService extends BeforeAndAfterEach with MockitoSugar 
   }
 
   def mockInsertNewManagementUser(inserted: Boolean): OngoingStubbing[Future[MongoCreateResponse]] = {
-    when(mockManagementAccountService.insertNewManagementUser(any())(any()))
+    when(mockManagementAccountService.insertNewManagementUser(any())(any(), any()))
       .thenReturn(Future(if(inserted) MongoSuccessCreate else MongoFailedCreate))
   }
 
@@ -62,17 +62,17 @@ trait MockManagementAccountService extends BeforeAndAfterEach with MockitoSugar 
   }
 
   def mockUpdateEmail(updated: Boolean): OngoingStubbing[Future[MongoUpdatedResponse]] = {
-    when(mockManagementAccountService.updateEmail(any(), any())(any()))
+    when(mockManagementAccountService.updateEmail(any(), any())(any(), any()))
       .thenReturn(Future(if(updated) MongoSuccessUpdate else MongoFailedUpdate))
   }
 
   def mockUpdatePassword(updated: Boolean): OngoingStubbing[Future[MongoUpdatedResponse]] = {
-    when(mockManagementAccountService.updatePassword(any(), any(), any())(any()))
+    when(mockManagementAccountService.updatePassword(any(), any(), any())(any(), any()))
       .thenReturn(Future(if(updated) MongoSuccessUpdate else MongoFailedUpdate))
   }
 
   def mockDeleteManagementUser(deleted: Boolean): OngoingStubbing[Future[MongoDeleteResponse]] = {
-    when(mockManagementAccountService.deleteUser(any())(any()))
+    when(mockManagementAccountService.deleteUser(any())(any(), any()))
       .thenReturn(Future(if(deleted) MongoSuccessDelete else MongoFailedDelete))
   }
 }

@@ -17,9 +17,9 @@
 package utils
 
 import akka.util.Timeout
-import com.cjwwdev.implicits.ImplicitDataSecurity._
 import com.cjwwdev.http.headers.HeaderPackage
 import com.cjwwdev.http.headers.HeaderPackage._
+import com.cjwwdev.implicits.ImplicitDataSecurity._
 import com.cjwwdev.testing.integration.IntegrationTestSpec
 import com.cjwwdev.testing.integration.application.IntegrationApplication
 import com.cjwwdev.testing.integration.wiremock.WireMockSetup

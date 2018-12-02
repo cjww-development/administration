@@ -20,7 +20,7 @@ import com.cjwwdev.logging.Logging
 import connectors.DNSConnector
 import javax.inject.Inject
 
-import scala.concurrent.{ExecutionContext => ExC, Future}
+import scala.concurrent.{Future, ExecutionContext => ExC}
 
 class DefaultDNSService @Inject()(val dnsConnector: DNSConnector) extends DNSService
 
@@ -34,7 +34,7 @@ trait DNSService extends Logging {
     dnsConnector.getPublicIPAddress flatMap { ip =>
       if(ip == getIP) {
         logger.warn("[updatePublicIP] - The fetched IP hasn't changed; update aborted this time")
-        Future(ip)
+        Future.successful(ip)
       } else {
         dnsConnector.updateFreeDNS(token) map { _ =>
           logger.info("[updatePublicIP] - The IP address has changed, updating dynamic dns provider")
