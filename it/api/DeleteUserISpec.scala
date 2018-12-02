@@ -19,6 +19,7 @@ package api
 import com.cjwwdev.implicits.ImplicitDataSecurity._
 import models.Account
 import play.api.libs.ws.WSResponse
+import play.api.test.FakeRequest
 import repositories.ManagementAccountRepository
 import utils.IntegrationSpec
 
@@ -27,6 +28,8 @@ import scala.concurrent.Future
 class DeleteUserISpec extends IntegrationSpec {
 
   lazy val repo = app.injector.instanceOf[ManagementAccountRepository]
+
+  implicit val req = FakeRequest()
 
   "DELETE /users/:managementId" should {
     "return a No content" when {

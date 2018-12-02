@@ -18,10 +18,10 @@ package api
 
 import com.cjwwdev.implicits.ImplicitDataSecurity._
 import com.cjwwdev.security.obfuscation.Obfuscation._
-import com.cjwwdev.security.sha.SHA512
 import models.Account
 import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
+import play.api.test.FakeRequest
 import repositories.ManagementAccountRepository
 import utils.IntegrationSpec
 
@@ -30,6 +30,8 @@ import scala.concurrent.Future
 class RegistrationISpec extends IntegrationSpec {
 
   lazy val repo = app.injector.instanceOf[ManagementAccountRepository]
+
+  implicit val req = FakeRequest()
 
   "/administration/register" should {
     "return a Created" when {

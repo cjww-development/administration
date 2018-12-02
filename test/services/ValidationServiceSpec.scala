@@ -17,6 +17,7 @@
 package services
 
 import helpers.services.ServiceSpec
+import play.api.test.FakeRequest
 import repositories.ManagementAccountRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,6 +27,8 @@ class ValidationServiceSpec extends ServiceSpec {
   private val testService = new ValidationService {
     override val managementAccountRepository: ManagementAccountRepository = mockManagementAccountRepository
   }
+
+  implicit val req = FakeRequest()
 
   "isEmailInUse" should {
     "return true" when {

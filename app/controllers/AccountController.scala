@@ -18,15 +18,15 @@ package controllers
 
 import com.cjwwdev.config.ConfigurationLoader
 import com.cjwwdev.implicits.ImplicitDataSecurity._
-import com.cjwwdev.security.obfuscation.Obfuscation._
 import com.cjwwdev.mongo.responses.{MongoFailedCreate, MongoFailedDelete, MongoSuccessCreate, MongoSuccessDelete}
+import com.cjwwdev.security.obfuscation.Obfuscation._
 import common.{BackendController, MissingAccountException}
 import javax.inject.Inject
 import models.{Account, Credentials}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{ManagementAccountService, ValidationService}
 
-import scala.concurrent.{ExecutionContext => ExC, Future}
+import scala.concurrent.{Future, ExecutionContext => ExC}
 
 class DefaultAccountController @Inject()(val controllerComponents: ControllerComponents,
                                          val validationService: ValidationService,
@@ -77,10 +77,10 @@ trait AccountController extends BackendController {
         managementAccountService.authenticateUser(credentials) map { managementId =>
           val (status, body) = managementId match {
             case Some(id) =>
-              logger.info(s"User ${managementId.get} successfully authenticated")
+              LogAt.info(s"User ${managementId.get} successfully authenticated")
               (OK, id.encrypt)
             case None =>
-              logger.warn("No matching user found; authentication failed")
+              LogAt.warn("No matching user found; authentication failed")
               (FORBIDDEN, "User could not be authenticated")
           }
 

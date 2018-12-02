@@ -19,12 +19,12 @@ package services
 import com.cjwwdev.mongo.responses.{MongoCreateResponse, MongoDeleteResponse, MongoUpdatedResponse}
 import common.MissingAccountException
 import javax.inject.Inject
-
 import models.{Account, Credentials}
+import play.api.mvc.Request
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
 
-import scala.concurrent.{ExecutionContext => ExC, Future}
+import scala.concurrent.{Future, ExecutionContext => ExC}
 
 class DefaultManagementAccountService @Inject()(val managementAccountRepository: ManagementAccountRepository) extends ManagementAccountService
 
@@ -32,7 +32,7 @@ trait ManagementAccountService {
 
   val managementAccountRepository: ManagementAccountRepository
 
-  def insertNewManagementUser(account: Account)(implicit ec: ExC): Future[MongoCreateResponse] = {
+  def insertNewManagementUser(account: Account)(implicit ec: ExC, request: Request[_]): Future[MongoCreateResponse] = {
     managementAccountRepository.insertManagementAccount(account)
   }
 
@@ -59,11 +59,11 @@ trait ManagementAccountService {
     }
   }
 
-  def updateEmail(managementId: String, email: String)(implicit ec: ExC): Future[MongoUpdatedResponse] = {
+  def updateEmail(managementId: String, email: String)(implicit ec: ExC, request: Request[_]): Future[MongoUpdatedResponse] = {
     managementAccountRepository.updateEmail(managementId, email)
   }
 
-  def updatePassword(managementId: String, oldPassword: String, newPassword: String)(implicit ec: ExC): Future[MongoUpdatedResponse] = {
+  def updatePassword(managementId: String, oldPassword: String, newPassword: String)(implicit ec: ExC, request: Request[_]): Future[MongoUpdatedResponse] = {
     for {
       acc <- managementAccountRepository.getManagementUser(AccountSelectors.passwordSelector(managementId, oldPassword)) map {
         _.getOrElse(throw new MissingAccountException(s"No account found for managementId $managementId"))
@@ -72,7 +72,7 @@ trait ManagementAccountService {
     } yield mur
   }
 
-  def deleteUser(managementId: String)(implicit ec: ExC): Future[MongoDeleteResponse] = {
+  def deleteUser(managementId: String)(implicit ec: ExC, request: Request[_]): Future[MongoDeleteResponse] = {
     managementAccountRepository.deleteManagementUser(managementId)
   }
 }

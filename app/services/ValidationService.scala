@@ -16,26 +16,32 @@
 
 package services
 
+import com.cjwwdev.logging.output.Logger
 import javax.inject.Inject
+import play.api.mvc.Request
 import repositories.ManagementAccountRepository
 import selectors.AccountSelectors
 
-import scala.concurrent.{ExecutionContext => ExC, Future}
+import scala.concurrent.{Future, ExecutionContext => ExC}
 
 class DefaultValidationService @Inject()(val managementAccountRepository: ManagementAccountRepository) extends ValidationService
 
-trait ValidationService {
+trait ValidationService extends Logger {
   val managementAccountRepository: ManagementAccountRepository
 
-  def isEmailInUse(email: String)(implicit ec: ExC): Future[Boolean] = {
-    managementAccountRepository.getManagementUser(AccountSelectors.emailSelector(email)) map {
-      _.isDefined
+  def isEmailInUse(email: String)(implicit ec: ExC, request: Request[_]): Future[Boolean] = {
+    managementAccountRepository.getManagementUser(AccountSelectors.emailSelector(email)) map { user =>
+      val isDefined = user.isDefined
+      if(isDefined) LogAt.warn("[isEmailInUse] - The requested email is already in use on this system")
+      isDefined
     }
   }
 
-  def isUserNameInUse(username: String)(implicit ec: ExC): Future[Boolean] = {
-    managementAccountRepository.getManagementUser(AccountSelectors.userNameSelector(username)) map {
-      _.isDefined
+  def isUserNameInUse(username: String)(implicit ec: ExC, request: Request[_]): Future[Boolean] = {
+    managementAccountRepository.getManagementUser(AccountSelectors.userNameSelector(username)) map { user =>
+      val isDefined = user.isDefined
+      if(isDefined) LogAt.warn("[isUserNameInUse] - The requested user name is already in use on this system")
+      isDefined
     }
   }
 }

@@ -20,8 +20,8 @@ import java.util.UUID
 
 import com.cjwwdev.regex.RegexPack
 import com.cjwwdev.security.obfuscation.{Obfuscation, Obfuscator}
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
 case class Account(managementId: String,
                    username: String,

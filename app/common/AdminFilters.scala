@@ -17,7 +17,7 @@
 
 package common
 
-import com.cjwwdev.filters.RequestLoggingFilter
+import com.cjwwdev.logging.filters.RequestLoggingFilter
 import com.kenshoo.play.metrics.MetricsFilter
 import javax.inject.Inject
 import play.api.http.DefaultHttpFilters
