@@ -28,7 +28,7 @@ private object CompileDependencies {
   private val reactiveMongoVersion = "7.3.0"
   private val serviceHealthVersion = "0.3.1"
   private val metricsVersion       = "1.0.3"
-  private val loggingUtilsVersion  = "1.2.5"
+  private val loggingUtilsVersion  = "1.2.6"
 
   private val playImports: Seq[ModuleID] = Seq(filters, guice)
 
