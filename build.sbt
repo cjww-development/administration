@@ -56,6 +56,7 @@ lazy val microservice = Project(appName, file("."))
     Keys.fork                  in IntegrationTest :=  false,
     unmanagedSourceDirectories in IntegrationTest :=  (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
     parallelExecution          in IntegrationTest :=  false,
+    dockerRepository                              := Some("cjwwdevelopment"),
     dockerCommands                                := Seq(
       Cmd("FROM", "openjdk:8u181-jdk"),
       Cmd("WORKDIR", "/opt/docker"),
